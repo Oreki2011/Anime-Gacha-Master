@@ -1109,7 +1109,14 @@ setupCardTilt();
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbNEz0cEMi9sfmTtTrgUi-WJJghNiy32E",
+            authDomain: "anime-gacha-master.firebaseapp.com",
+            projectId: "anime-gacha-master",
+            storageBucket: "anime-gacha-master.firebasestorage.app",
+            messagingSenderId: "435922058347",
+            appId: "1:435922058347:web:0488f4ec3272186df3052e"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
