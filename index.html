@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Gacha Master - Ultimate Edition</title>
+    <style>
+        :root {
+            --bg-color: #060709;
+            --card-bg: #12151c;
+            --primary: #4f46e5;
+            --text: #f4f4f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        h1 { color: #818cf8; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; text-shadow: 0 0 10px rgba(129,140,248,0.5); }
+        
+        .hud {
+            display: flex; gap: 15px; background: var(--card-bg); padding: 10px 20px;
+            border-radius: 10px; margin-bottom: 15px; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6); border: 1px solid #1e2530; font-size: 14px;
+        }
+
+        .container {
+            width: 100%; max-width: 580px; background: var(--card-bg); padding: 20px;
+            border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            text-align: center; border: 1px solid #1e2530;
+        }
+
+        button, select {
+            background-color: var(--primary); color: white; border: none; padding: 10px 16px;
+            font-size: 13px; font-weight: bold; border-radius: 8px; cursor: pointer;
+            margin: 5px; transition: 0.2s; text-transform: uppercase;
+        }
+
+        button { width: 45%; }
+        select { width: 95%; margin-bottom: 15px; border: 1px solid #4f46e5; }
+        .btn-full { width: 92%; }
+        .btn-secondary { background-color: #27272a; }
+        .btn-farm { background-color: #059669; }
+
+        .card {
+            width: 110px; height: 175px; border-radius: 12px; display: inline-flex;
+            flex-direction: column; justify-content: space-between; padding: 8px;
+            margin: 6px; font-weight: bold; text-align: left; position: relative;
+            animation: popIn 0.3s ease-out; overflow: hidden;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8); border: 2px solid transparent;
+            background: #1e293b;
+        }
+
+        /* --- RARIDADES CSS --- */
+        .r1  { background: linear-gradient(135deg, #475569, #1e293b); border-color: #64748b; }
+        .r2  { background: linear-gradient(135deg, #16a34a, #15803d); border-color: #4ade80; }
+        .r3  { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #60a5fa; }
+        .r4  { background: linear-gradient(135deg, #7c3aed, #5b21b6); border-color: #a78bfa; }
+        .r5  { background: linear-gradient(135deg, #ea580c, #b45309); border-color: #fbbf24; }
+        .r6  { background: linear-gradient(135deg, #dc2626, #991b1b); border-color: #f87171; }
+        .r7  { background: linear-gradient(135deg, #1f2937, #111827); border-color: #e2e8f0; }
+        .r8  { background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-color: #fef08a; color: #000; }
+        .r9  { background: linear-gradient(135deg, #06b6d4, #0891b2); border-color: #2dd4bf; }
+        .r10 { background: linear-gradient(135deg, #0d9488, #0f766e); border-color: #2dd4bf; }
+        .r11 { background: linear-gradient(135deg, #9333ea, #7e22ce); border-color: #c084fc; }
+        .r12 { background: linear-gradient(135deg, #e11d48, #be123c); border-color: #fb7185; }
+        .r13 { background: linear-gradient(135deg, #22c55e, #a3e635); border-color: #ccff00; box-shadow: 0 0 10px #ccff00; }
+        .r14 { background: linear-gradient(135deg, #0f172a, #3b0764); border-color: #93c5fd; }
+        .r15 { background: linear-gradient(135deg, #ff00ff, #7c3aed, #00ffff); border-color: #fff; animation: holo 3s infinite linear; }
+        .r16 { background: linear-gradient(135deg, #a21caf, #701a75); border-color: #f0abfc; }
+        .r17 { background: linear-gradient(135deg, #0369a1, #0c4a6e); border-color: #7dd3fc; }
+        .r18 { background: linear-gradient(135deg, #b45309, #78350f); border-color: #fcd34d; }
+        .r19 { background: linear-gradient(135deg, #990000, #500000); border-color: #ff4d4d; }
+        .r20 { background: linear-gradient(135deg, #065f46, #022c22); border-color: #6ee7b7; }
+        .r21 { background: linear-gradient(135deg, #31103f, #581c87); border-color: #d8b4fe; }
+        .r22 { background: linear-gradient(135deg, #0f766e, #134e4a); border-color: #5eead4; }
+        .r23 { background: #18181b; border-color: #fff; box-shadow: 0 0 10px #fff; }
+        .r24 { background: linear-gradient(135deg, #0284c7, #0369a1, #e0f2fe); border-color: #38bdf8; box-shadow: 0 0 20px #38bdf8, inset 0 0 15px #fff; }
+        .r25 { background: linear-gradient(45deg, #fbbf24, #ef4444, #9333ea, #3b82f6); border-color: #fff; box-shadow: 0 0 25px #f59e0b; animation: rainbow 3s linear infinite; }
+      /* Nível 26 - Traído pelos Anjos (Raridade Única) */
+.r26 { 
+    background: radial-gradient(circle, #000000, #1a1a2e, #020617);
+    border: 3px solid #ffffff; 
+    color: #fff;
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.4), inset 0 0 20px rgba(0, 242, 255, 0.2);
+    animation: angelBetrayal 4s infinite alternate;
+}
+
+@keyframes angelBetrayal {
+    0% { filter: brightness(1) contrast(1.2); box-shadow: 0 0 20px #fff; }
+    50% { filter: brightness(1.5) contrast(1.5); box-shadow: 0 0 50px #00f2ff; }
+    100% { filter: brightness(1) contrast(1.2); box-shadow: 0 0 20px #fff; }
+}
+
+/* Ajuste no ícone para o nível 26 */
+.card-center.betrayed {
+    font-size: 30px;
+    text-shadow: 0 0 15px #fff;
+}
+
+        @keyframes rainbow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+        @keyframes holo { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .card.locked { background: #12151c !important; border: 2px dashed #27272a !important; color: #3f3f46 !important; opacity: 0.6; }
+        .card-count { position: absolute; top: -5px; right: -5px; background: #dc2626; color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%; border: 1px solid #fff; z-index: 5; }
+        .card-index { position: absolute; top: 4px; left: 6px; font-size: 8px; opacity: 0.8; }
+        .card-center { text-align: center; font-size: 22px; margin: 2px 0; }
+        .card-name { font-size: 9px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-anime { font-size: 7px; text-align: center; opacity: 0.8; text-transform: uppercase; }
+        
+        .player-list { display: flex; flex-wrap: wrap; justify-content: center; max-height: 380px; overflow-y: auto; margin-top: 15px; width: 100%; }
+        .screen { display: none; width: 100%; }
+        .screen.active { display: block; }
+        .book-nav { display: flex; justify-content: space-between; align-items: center; background: #1e2530; padding: 8px; border-radius: 8px; margin-bottom: 10px; }
+
+        .card.clickable { cursor: pointer; transition: transform 0.15s ease; }
+        .card.clickable:active { transform: scale(0.95); }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.82); z-index: 1000; justify-content: center; align-items: center;
+            padding: 20px; box-sizing: border-box;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--card-bg); border-radius: 16px; padding: 20px; max-width: 360px; width: 100%;
+            max-height: 85vh; overflow-y: auto; border: 1px solid #27272a; box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            animation: popIn 0.2s ease-out; text-align: center; position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 10px; right: 10px; background: #27272a; color: #fff; border: none;
+            width: 28px; height: 28px; border-radius: 50%; font-size: 14px; cursor: pointer; margin: 0; padding: 0;
+        }
+        .modal-card-stage {
+            perspective: 900px;
+            margin: 10px auto 6px;
+            width: 160px; height: 250px;
+        }
+        .modal-card-visual {
+            position: relative;
+            width: 160px; height: 250px;
+            transform-style: preserve-3d;
+            touch-action: none;
+            cursor: grab;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform;
+        }
+        .modal-card-visual:active { cursor: grabbing; }
+        .modal-card-visual.dragging { transition: none; }
+        .card-face {
+            position: absolute; inset: 0; border-radius: 14px; display: flex;
+            flex-direction: column; justify-content: space-between; padding: 12px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8); border: 2px solid transparent; font-weight: bold;
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            overflow: hidden;
+        }
+        .card-face-front { transform: rotateY(0deg); }
+        .card-face-back {
+            transform: rotateY(180deg);
+            background: radial-gradient(circle at 50% 38%, #3b1670 0%, #1a0a38 45%, #05010f 100%);
+            border: 2px solid #e9c766;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .card-back-inner {
+            position: absolute; inset: 6px; border: 1px solid rgba(233,199,102,0.5); border-radius: 9px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+        }
+        .card-back-glow {
+            position: absolute; width: 130px; height: 130px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(233,199,102,0.55), transparent 70%);
+            filter: blur(4px);
+            animation: backGlowPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes backGlowPulse { 0%,100% { opacity: 0.45; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.15); } }
+        .card-back-icon { font-size: 30px; filter: drop-shadow(0 0 10px rgba(233,199,102,0.85)); z-index: 1; }
+        .card-back-title {
+            font-size: 12px; letter-spacing: 3px; color: #f5dfa0; text-transform: uppercase;
+            font-weight: 800; text-shadow: 0 0 12px rgba(245,223,160,0.7); z-index: 1; text-align: center;
+        }
+        .card-back-sub {
+            font-size: 6.5px; letter-spacing: 2px; color: #c4b5fd; opacity: 0.75; text-transform: uppercase; z-index: 1;
+        }
+        .card-back-corner {
+            position: absolute; width: 8px; height: 8px; border: 1px solid rgba(233,199,102,0.7); z-index: 1;
+        }
+        .card-back-corner.tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .card-back-corner.tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+        .card-back-corner.bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+        .card-back-corner.br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+        .card-shine {
+            position: absolute; inset: 0; border-radius: 12px; pointer-events: none;
+            background: radial-gradient(circle at var(--shine-x, 50%) var(--shine-y, 32%), rgba(255,255,255,0.4), transparent 60%);
+            mix-blend-mode: overlay; z-index: 2;
+        }
+        .card-foil {
+            position: absolute; inset: 0; pointer-events: none; z-index: 2;
+            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.35) 35%, transparent 50%);
+            background-size: 250% 250%;
+            animation: foilSweep 3.4s ease-in-out infinite;
+            mix-blend-mode: overlay;
+        }
+        @keyframes foilSweep { 0% { background-position: 120% 0%; } 50% { background-position: -20% 100%; } 100% { background-position: 120% 0%; } }
+        .card-face .card-center { font-size: 42px; }
+        .card-face .card-name { font-size: 13px; white-space: normal; }
+        .card-face .card-anime { font-size: 10px; }
+        .modal-tilt-hint {
+            font-size: 10px; color: #71717a; letter-spacing: 0.5px; margin-bottom: 10px;
+        }
+        .modal-rarity-tag {
+            display: inline-block; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 20px;
+            background: #27272a; color: #818cf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+        }
+        .modal-power { font-size: 13px; color: #a1a1aa; margin-bottom: 12px; }
+        .modal-section { text-align: left; background: #1e2530; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+        .modal-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #818cf8; font-weight: bold; margin-bottom: 4px; }
+        .modal-section-text { font-size: 12px; line-height: 1.5; color: #e4e4e7; }
+
+        /* ===== REVELAÇÃO 3D EM TELA CHEIA (raridade 15+) ===== */
+        .reveal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 3000;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #030308 75%);
+            flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; overflow: hidden; -webkit-tap-highlight-color: transparent;
+        }
+        .reveal-overlay.active { display: flex; }
+        .reveal-stage {
+            position: relative; width: 280px; height: 420px;
+            display: flex; justify-content: center; align-items: center;
+            perspective: 1200px;
+        }
+        .reveal-glow-ring {
+            position: absolute; width: 340px; height: 340px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.35), rgba(129,140,248,0.15) 45%, transparent 72%);
+            filter: blur(6px);
+            animation: pulseGlow 2.2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(0.9); opacity: 0.55; }
+            50% { transform: scale(1.15); opacity: 1; }
+        }
+        .reveal-sparkles { position: absolute; width: 0; height: 0; top: 50%; left: 50%; pointer-events: none; }
+        .sparkle {
+            position: absolute; width: 5px; height: 5px; border-radius: 50%;
+            background: #fff; box-shadow: 0 0 10px 3px rgba(255,255,255,0.9);
+            animation: sparkleFloat 1.6s ease-in-out infinite;
+            opacity: 0;
+        }
+        @keyframes sparkleFloat {
+            0% { opacity: 0; transform: translate(0,0) scale(0.4); }
+            15% { opacity: 1; }
+            50% { opacity: 1; transform: translate(var(--sx), var(--sy)) scale(1.3); }
+            100% { opacity: 0; transform: translate(calc(var(--sx) * 1.3), calc(var(--sy) * 1.3)) scale(0.4); }
+        }
+        .reveal-card-3d {
+            width: 220px; height: 340px; border-radius: 20px; position: relative;
+            display: flex; flex-direction: column; justify-content: space-between; padding: 18px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.85); border: 3px solid transparent; font-weight: bold;
+            transform-style: preserve-3d;
+            animation: reveal3d 3.2s ease-in-out infinite;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+        }
+        @keyframes reveal3d {
+            0%   { transform: rotateY(-22deg) rotateX(6deg) translateZ(0); }
+            25%  { transform: rotateY(0deg) rotateX(-4deg) translateZ(20px); }
+            50%  { transform: rotateY(22deg) rotateX(6deg) translateZ(0); }
+            75%  { transform: rotateY(0deg) rotateX(-4deg) translateZ(20px); }
+            100% { transform: rotateY(-22deg) rotateX(6deg) translateZ(0); }
+        }
+        .reveal-card-3d .card-center { font-size: 62px; margin: 10px 0; }
+        .reveal-card-3d .card-name { font-size: 17px; white-space: normal; }
+        .reveal-card-3d .card-anime { font-size: 12px; }
+        .reveal-rarity-label {
+            margin-top: 26px; font-size: 14px; font-weight: bold; letter-spacing: 1px;
+            color: #fff; text-transform: uppercase; text-shadow: 0 0 12px rgba(255,255,255,0.6);
+        }
+        .reveal-hint {
+            margin-top: 10px; font-size: 11px; color: #a1a1aa; letter-spacing: 0.5px;
+            animation: hintBlink 1.6s ease-in-out infinite;
+        }
+        @keyframes hintBlink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+        .reveal-counter {
+            position: absolute; top: 18px; right: 18px; font-size: 11px; color: #818cf8; font-weight: bold;
+        }
+
+        /* ===== TELA DE LOGIN (Firebase: Google + Visitante) ===== */
+        #login-screen {
+            position: fixed; inset: 0; z-index: 5000;
+            background: radial-gradient(circle at center, #12151c 0%, #060709 80%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 16px; padding: 20px; box-sizing: border-box; text-align: center;
+        }
+        #login-screen h1 { margin-bottom: 0; }
+        #login-screen p { color: #a1a1aa; font-size: 12px; margin: 0 0 10px; }
+        .login-btn {
+            width: 260px; padding: 12px 16px; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: bold; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
+            text-transform: none;
+        }
+        .login-btn:active { transform: scale(0.97); }
+        .login-btn-google { background: #fff; color: #1f1f1f; }
+        .login-btn-guest { background: #27272a; color: #f4f4f5; border: 1px solid #3f3f46; }
+        #login-error { color: #f87171; font-size: 12px; min-height: 16px; }
+        #login-loading { color: #818cf8; font-size: 12px; display: none; }
+        body.game-locked > *:not(#login-screen) { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1>✨ Anime Gacha Master</h1>
+        <p>Faça login para salvar seu progresso</p>
+        <button class="login-btn login-btn-google" id="btn-google-login">
+            <span>🔵</span> Entrar com Google
+        </button>
+        <button class="login-btn login-btn-guest" id="btn-guest-login">
+            👤 Entrar como Visitante
+        </button>
+        <div id="login-loading">Entrando...</div>
+        <div id="login-error"></div>
+    </div>
+
+    <h1>✨ ANIME GACHA MASTER</h1>
+    
+    <div class="hud">
+        <div>💎 Gemas: <span id="gems">1000</span></div>
+        <div>⚡ Poder: <span id="total-power">0</span></div>
+        <div>🍀 Sorte: <span id="luck-display">x1.00</span></div>
+    </div>
+
+    <div id="menu-screen" class="container screen active">
+        <h2>Menu Principal</h2>
+        <button class="btn-full" onclick="switchScreen('summon-screen')">✨ Invocações</button>
+        <button class="btn-full btn-farm" onclick="farmGems()">💰 Farmar Gemas (<span id="farm-amount-label">+50</span>)</button>
+        <button class="btn-full" onclick="openIndexBook()">📖 Livro de Índice</button>
+        <button class="btn-full btn-secondary" onclick="switchScreen('collection-screen')">📦 Minha Coleção</button>
+        <button class="btn-full btn-secondary" onclick="openShop()">🏪 Loja</button>
+    </div>
+
+    <div id="summon-screen" class="container screen">
+        <h2>Portal de Invocação</h2>
+        <div id="summon-result" class="player-list"></div>
+        <div style="margin-top: 10px;">
+            <button onclick="summon(1)">1x</button>
+            <button onclick="summon(10)">10x</button>
+            <button onclick="summon(100)">100x</button>
+            <button onclick="summon(1000)">1000x</button>
+        </div>
+        <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
+    </div>
+
+    <div id="index-screen" class="container screen">
+        <h2>📖 Livro de Índice</h2>
+        <select id="rarity-filter" onchange="renderBookPage()"></select>
+        <div class="book-nav" id="book-nav-box">
+            <button class="btn-secondary" onclick="changeBookPage(-1)">◀</button>
+            <div style="text-align: center;">
+                <span id="book-title" style="font-size: 11px; font-weight: bold; color: #818cf8;">Anime</span><br>
+                <small id="book-progress" style="font-size: 9px; color: #a1a1aa;">0/24</small>
+            </div>
+            <button class="btn-secondary" onclick="changeBookPage(1)">▶</button>
+        </div>
+        <div id="book-content" class="player-list"></div>
+        <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
+    </div>
+
+    <div id="collection-screen" class="container screen">
+        <h2>Minha Coleção</h2>
+        <div id="collection-list" class="player-list"></div>
+        <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
+    </div>
+
+    <div id="card-modal" class="modal-overlay" onclick="if(event.target===this) closeCardModal()">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeCardModal()">✕</button>
+            <div class="modal-card-stage">
+                <div id="modal-card-visual" class="modal-card-visual">
+                    <div id="modal-card-front" class="card-face card-face-front">
+                        <div class="card-shine"></div>
+                        <div class="card-foil"></div>
+                    </div>
+                    <div class="card-face card-face-back">
+                        <div class="card-back-glow"></div>
+                        <div class="card-back-inner">
+                            <div class="card-back-icon">💎</div>
+                            <div class="card-back-title">Anime Gacha<br>Master</div>
+                            <div class="card-back-sub">✦ Coleção Oficial ✦</div>
+                        </div>
+                        <div class="card-back-corner tl"></div>
+                        <div class="card-back-corner tr"></div>
+                        <div class="card-back-corner bl"></div>
+                        <div class="card-back-corner br"></div>
+                        <div class="card-shine"></div>
+                        <div class="card-foil"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-tilt-hint">👆 Arraste a carta para girar 360° em qualquer direção</div>
+            <div id="modal-rarity-tag" class="modal-rarity-tag"></div>
+            <div id="modal-power" class="modal-power"></div>
+            <div class="modal-section">
+                <div class="modal-section-title">📖 Descrição</div>
+                <div id="modal-description" class="modal-section-text"></div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-section-title">✨ Por que essa raridade?</div>
+                <div id="modal-reason" class="modal-section-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="reveal-overlay" class="reveal-overlay" onclick="advanceReveal()">
+        <div id="reveal-counter" class="reveal-counter"></div>
+        <div class="reveal-stage">
+            <div class="reveal-glow-ring"></div>
+            <div id="reveal-sparkles" class="reveal-sparkles"></div>
+            <div id="reveal-card-3d" class="reveal-card-3d"></div>
+        </div>
+        <div id="reveal-rarity-label" class="reveal-rarity-label"></div>
+        <div class="reveal-hint">Toque para continuar</div>
+    </div>
+
+    <div id="shop-screen" class="container screen">
+        <h2>🏪 Loja de Melhorias</h2>
+
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8;">💰 Ganho de Gemas</div>
+            <div style="font-size:11px; margin:6px 0;">Nível: <span id="gem-upgrade-level">0</span>/20</div>
+            <div style="font-size:11px; margin:6px 0;">Farmar atual: +<span id="gem-upgrade-current">50</span> gemas</div>
+            <div style="font-size:11px; margin:6px 0;">Custo da melhoria: <span id="gem-upgrade-cost">200</span> 💎</div>
+            <button class="btn-full" id="btn-gem-upgrade" onclick="buyGemUpgrade()">Melhorar Ganho de Gemas</button>
+        </div>
+
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8;">🍀 Sorte</div>
+            <div style="font-size:11px; margin:6px 0;">Nível: <span id="luck-upgrade-level">0</span>/20</div>
+            <div style="font-size:11px; margin:6px 0;">Multiplicador atual: x<span id="luck-upgrade-current">1.00</span></div>
+            <div style="font-size:11px; margin:6px 0;">Custo da melhoria: <span id="luck-upgrade-cost">250</span> 💎</div>
+            <button class="btn-full" id="btn-luck-upgrade" onclick="buyLuckUpgrade()">Melhorar Sorte</button>
+        </div>
+
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8;">♻️ Vender Repetidos</div>
+            <div style="font-size:11px; margin:6px 0;">Repetidas disponíveis: <span id="dupe-count">0</span></div>
+            <div style="font-size:11px; margin:6px 0;">Valor estimado: <span id="dupe-value">0</span> 💎</div>
+            <div style="font-size:9px; margin:6px 0; opacity:0.7;">Mantém 1 cópia de cada carta e vende o resto (quanto maior a raridade, mais gemas por carta).</div>
+            <button class="btn-full btn-farm" id="btn-sell-dupes" onclick="sellDuplicates()">Vender Todas as Repetidas</button>
+        </div>
+
+        <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
+    </div>
+
+    <script>
+      // 1. ADICIONE TODOS OS ANIMES NA LISTA (Isso gera as 2.136 cartas no índice)
+const animeList = [
+    "Akame ga Kill", "Alya Sometimes Hides Her Feelings", "Arifureta", "Aura: Koga Maryuin", "A Returner's Magic",
+    "Black Summoner", "Bleach", "Buddy Daddies", "Call of the Night", "Candy Boy", "Chained Soldier",
+    "Chainsaw Man", "Chivalry of a Failed Knight", "Clevatess", "Danganronpa", "Date A Live",
+    "Demon Slayer", "Dragon Ball Super", "Dragon Ball Z", "Dragon Ball Clássico", "Dragon Ball GT",
+    "Dragon Ball Kakumei", "Even Given the Worthless Appraiser Class", "Frieren", "Future Diary", "Goblin Slayer",
+    "Gods' Games We Play", "Hell's Paradise", "Horimiya", "Hyouka", "Irina: Vampire Cosmonaut",
+    "Jujutsu Kaisen", "Kaguya-sama", "Kaiju No. 8", "Kashiwada-san and Oota-kun", "Konohana Kitan", "Manaria Friends",
+    "Mecha-Ude", "Momose Akira", "Mushoku Tensei", "My Dress-Up Darling", "My Instant Kill Ability",
+    "My Status as Assassin", "My Teen Rom-Com SNAFU", "Myriad Colors Phantom World", "Neon Genesis Evangelion",
+    "Non Non Biyori", "Noragami", "Oreimo", "Our Last Crusade", "OverTake!", "Overflow", "Overlord",
+    "Pluto", "Rascal Does Not Dream", "Record of Ragnarok", "Rewrite", "Re:Zero", "Rich Girl Caretaker",
+    "Seiren", "Sentenced to Be a Hero", "Seraph of the End", "Shingeki no Bahamut: Genesis", "Shingeki no Bahamut: Virgin Soul",
+    "Shinobi no Ittoki", "Sword Art Online", "Taboo Tattoo", "That Time I Got Reincarnated as a Slime", "The Angel Next Door",
+    "The Aristocrat's Adventure", "The Daily Life of the Immortal King", "The Dangers in My Head", "The Detective Is Already Dead",
+    "The Eminence in Shadow", "The Foolish Angel Dances with the Demon", "The Girl I Like Forgot Her Glasses", "The Greatest Demon Lord Is Reborn",
+    "The Misfit of Demon King Academy", "The Rising of the Shield Hero", "The Tunnel to Summer", "Tonikaku Kawaii",
+    "Toradora", "Tsukimichi: Moonlit Fantasy", "Tune In to the Midnight Heart", "Uma Musume Pretty Derby", "Wind Breaker", "Wistoria: Wand and Sword", "Childhood Friend Rom-Com",
+    "One Punch Man", "One Piece", "Fairy Tail", "Blue Lock", "Code Geass", "Blue Exorcist", "Mashle", "Mob Psycho 100", "Zom 100", "Dr. Stone", "Fullmetal Alchemist", "Konosuba", "Clannad", "Your Lie in April", "Vinland Saga",
+    "Attack on Titan", "Seven Deadly Sins", "JoJo's Bizarre Adventure", "Tokyo Ghoul", "Hunter x Hunter", "Kakegurui",
+    "Black Clover", "Boruto", "Cyberpunk: Edgerunners", "Death Note", "Fate/Zero", "Log Horizon",
+    "Magi: The Labyrinth of Magic", "My Hero Academia", "Naruto Shippuden", "No Game No Life", "Steins;Gate",
+    "The Quintessential Quintuplets"
+].sort();
+
+// 2. PERSONAGENS REAIS (Vá colando os blocos que eu te mando aqui dentro)
+const specificCharacters = {
+    "Akame ga Kill": ["Ieyasu", "Sayo", "Zank", "Stylish", "Bols", "Seryu", "Lubbock", "Sheele", "Chelsea", "Mine", "Bulat", "Leone", "Susanoo", "Najenda", "Kurome", "Wave", "Run", "Budo", "Honest", "Tatsumi", "Akame", "Tatsumi Incursio", "Esdeath", "Akame Murasame"],
+    "Dragon Ball Kakumei": ["Gohan Kakumei", "Vegeta Kakumei", "Beerus", "Whis", "Daishinkan", "Zeno Future", "Krillin Master", "Tenshinhan", "Yamcha", "Trunks", "Goten", "Pan", "Bulma", "Piccolo God", "Freeza Fallen", "Cell", "Broly", "Cheelai", "Lemo", "Vados", "Champa", "Toppo", "Jiren", "Goku Kakumei"],
+    "Solo Leveling": ["Sung Jinwoo E", "Yoo Jinho", "Ju-Hee", "Kim Chul", "Cha Hae-In", "Choi Jong-In", "Baek Yoonho", "Go Gunhee", "Thomas Andre", "Christopher Reed", "Liu Zhigang", "Igris", "Tank", "Iron", "Tusk", "Beru", "Kaisel", "Greed", "Bellion", "Ashborn", "Antares", "Jinwoo Monarch", "Absolute Being", "Sung Jinwoo Final"],
+    "Bleach": ["Kon", "Hanataro", "Ganju", "Ikkaku", "Yumichika", "Rangiku", "Renji", "Uryu", "Chad", "Orihime", "Byakuya", "Kenpachi", "Toshiro", "Yoruichi", "Kisuke", "Ulquiorra", "Grimmjow", "Aizen", "Yamamoto", "Shunsui", "Ichibe", "Rukia Kuchiki", "Ichigo Mugetsu", "Yhwach Divinity"],
+    "Alya Sometimes Hides Her Feelings": ["Takeshi", "Hikaru", "Chisaki", "Touya", "Nonoa", "Sayaka", "Ayano", "Genzou", "Kyoko", "Maria Child", "Masachika Child", "Alya Child", "Yuki Gamer", "Masha Student", "Ayano Maid", "Yuki Suou", "Maria Kujou", "Masachika Kuze", "Alya Angry", "Alya Russian", "Alya Gym", "Alya Summer", "Alya Wedding", "Alisa Kujou Divinity"],
+    "Arifureta": ["Daisuke", "Meld", "Aiko", "Myu", "Shizuku", "Kouki", "Eri", "Freid", "Naiz", "Meill", "Miledi", "Oscar", "Shizuku Master", "Kaori", "Tio", "Shea", "Yue", "Hajime", "Hajime Silver", "Yue Queen", "Tio Dragon", "Kaori Apostle", "Hajime Slayer", "Hajime Final"],
+    "Aura: Koga Maryuin": ["Kinoshita", "Osamu", "Takahashi", "Suzuki", "Sato Momoka", "Kume", "Yamanishi", "Dorothy", "Gryphon", "Oda", "Yume", "Sato Child", "Koga Child", "Classmate A", "Classmate B", "Teacher", "Imagawa", "Yamamoto", "Sato Delusion", "Koga Delusion", "Sato Ichiro", "Koga Maryuin", "Sato & Koga", "Koga True Goddess"],
+    "A Returner's Magic": ["Ladoria", "Talia", "Donovan", "Azest Student", "Pram Student", "Romantica Student", "Desir Student", "Raffael", "Crow Mask", "Dordor", "Boromir", "Zod Exarion", "Swan", "Azest Kingscrown", "Pram Schneider", "Romantica Eru", "Desir Arman", "Pierrot Mask", "Desir C3", "Romantica High", "Pram Master", "Azest Ice Queen", "Desir C6", "Desir Final"],
+    "Black Summoner": ["Dalton", "Nagat", "Clive", "Leonheart", "Rio", "Victoria", "Toyado", "Setsuna", "Urd", "Mist", "Colette", "Gill", "Rion", "Ange", "Clotho", "Gerard", "Sera", "Efil", "Melfina", "Kelvin", "Gerard Night", "Sera Demon", "Efil Arrow", "Kelvin Demon Lord"],
+    "Buddy Daddies": ["Taro", "Jiro", "Saburo", "Ogino", "Akira", "Mei", "Boss", "Driver", "Informant", "Assassin A", "Assassin B", "Receptionist", "Anna", "Karin", "Shigeki", "Miri Baby", "Kyuutarou", "Rei Suwa", "Kazuki Kurusu", "Miri Unasaka", "Rei Killer", "Kazuki Protect", "Rei & Kazuki", "Miri Family"],
+    "Call of the Night": ["Ko Casual", "Akira School", "Mahiru", "Nico", "Kabura", "Midori", "Hatsuka", "Seri", "Lila", "Vampiro Mask", "Garoto", "Diretor", "Cliente", "Amigo", "Ko Night", "Akira Asai", "Anko Uguisu", "Nazuna Nurse", "Nazuna Dress", "Nazuna Sexy", "Anko Detective", "Ko Half-Vampire", "Nazuna Nanakusa", "Nazuna Full Power"],
+    "Candy Boy": ["Estudante A", "Professor", "Vendedor", "Clube", "Pai", "Mãe", "Amiga", "Conselho", "Kanade Uniform", "Yukino Uniform", "Sakuya Casual", "Kanade Angry", "Yukino Provoke", "Sakuya Foto", "Yukino Sleepy", "Kanade Hobby", "Kanade Sakurai", "Yukino Sakurai", "Sakuya Kamiyama", "Yukino & Kanade", "Kanade & Sakuya", "Irmãs Sakurai", "Pure Hearts", "Candy Boy Legend"],
+    "Chained Soldier": ["Shuuki A", "Shuuki B", "Soldado", "Treinador", "Operador", "Nei Uniform", "Shushu Uniform", "Himari Uniform", "Kyouka Uniform", "Yuuki Uniform", "Aoba", "Coco", "Nei Okumo", "Shushu Suruga", "Himari Azuma", "Tenka Izumo", "Kyouka Uzen", "Yuuki Wakura", "Tenka Space", "Himari Heavy", "Kyouka Zenith", "Yuuki Transformed", "Tenka Legend", "Yuuki God Form"],
+    "Chainsaw Man": ["Zombie Devil", "Bat Devil", "Kobeni", "Eternity Devil", "Beam", "Galgali", "Angel", "Prinsh", "Madoka", "Arai", "Himeno", "Kishibe", "Quanxi", "Reze", "Aki Hayakawa", "Power", "Denji", "Makima", "Aki Gun", "Quanxi Hybrid", "Reze Bomb", "Power Blood", "Denji Pochita", "Chainsaw Man True"],
+    "Chivalry of a Failed Knight": ["Orito", "Renren", "Nene", "Yuri", "Kagami", "Kurono", "Alice Bunard", "Nagi", "Kanata", "Utakata", "Touka Todo", "Ikki", "Stella", "Ittou Shura", "Dragon Form", "Ittou Rasei", "Empress Form", "Elite Knight", "Master", "Star King", "Duo", "Failed Knight Legend", "Shizuku Kurogane", "Stella Divine"],
+    "Clevatess": ["Aldeão", "Soldado", "Guarda", "Mercador", "Hanz", "Clua", "Darius", "Rei", "Sacerdote", "Guerreira", "Alicia", "Hanz Power", "Clua Magic", "Alicia Daggers", "Clevatess Human", "Hanz Knight", "Clua Mage", "Alicia Shadow", "Clevatess Dragon", "Clevatess Rage", "Clevatess Demon", "Hero", "Legend", "Clevatess God"],
+    "Danganronpa": ["Leon", "Sayaka", "Mondo", "Ishimaru", "Chihiro", "Celeste", "Sakura", "Toko", "Hifumi", "Yasuhiro", "Byakuya", "Kyoko", "Makoto", "Junko", "Monomi", "Monokuma", "Izuru", "Detective Kyoko", "Makoto Hope", "Junko Despair", "Ultimate Monokuma", "Master Monokuma", "Ultimate Despair", "Danganronpa Legend"],
+    "Date A Live": ["Ai", "Mai", "Mii", "Tamae", "Mana", "Ellen", "Kaguya", "Yuzuru", "Miku", "Natsumi", "Nia", "Mukuro", "Origami", "Kotori", "Kurumi", "Shido", "Tohka", "Kurumi Zafkiel", "Tohka Tenka", "Origami Spirit", "Kurumi Rasiel", "Shido King", "Yoshino", "Mio Origin"],
+    "Demon Slayer": ["Murata", "Goto", "Sumi", "Kiyo", "Naho", "Aoi", "Kanao", "Genya", "Mitsuri", "Obanai", "Muichiro", "Gyomei", "Sanemi", "Tengen", "Rengoku", "Shinobu", "Giyu", "Nezuko", "Akaza", "Doma", "Kokushibo", "Muzan", "Tanjiro Sun", "Yoriichi"],
+    "Dragon Ball Super": ["Jaco", "Monaka", "Cabba", "Caulifla", "Kale", "Frost", "Magetta", "Botamo", "Dyspo", "Toppo", "Bergamo", "Basil", "Lavender", "Hit", "Black", "Zamasu", "Jiren", "Gohan Beast", "Orange Piccolo", "Goku MUI", "Vegeta Ego", "Gogeta Blue", "Broly Full", "Zeno-sama"],
+    "Dragon Ball Z": ["Raditz", "Nappa", "Dodoria", "Zarbon", "Guldo", "Recoome", "Burter", "Jeice", "Ginyu", "A-19", "A-20", "A-16", "A-17", "A-18", "Trunks Future", "Cell", "Majin Boo", "Vegeta", "Gohan Mystic", "Vegito", "Goku SSJ3", "Super Boo", "Kid Boo", "Goku Spirit Bomb"],
+    "Dragon Ball Clássico": ["Oolong", "Pual", "Yamcha", "Mestre Kame", "Kuririn", "Chi-Chi", "Ox-King", "Lanch", "Bacterian", "Nam", "Giran", "Uranai", "Karin", "Tao Pai Pai", "Blue", "Tamborine", "Drum", "Cymbal", "Piccolo Daimao", "Kami-sama", "Goku Teen", "Shenlong", "Kid Goku", "Classic Master"],
+    "Dragon Ball GT": ["Ludo", "Mutchy", "Leon", "Myuu", "Rilldo", "Baby", "Baby Vegeta", "Super 17", "Haze", "Rage", "Oceanus", "Naturon", "Qi", "Nova", "Eis", "Goku Child", "Pan", "Trunks GT", "Vegeta SSJ4", "Goku SSJ4", "Syn", "Omega", "Gogeta SSJ4", "Goku Universal"],
+    "Even Given the Worthless Appraiser Class": ["Ars", "Ricia", "Mireille", "Charlotte", "Rosell", "Raven", "Barca", "Lorde", "Soldado", "Mercador", "Mago", "General", "Pai", "Mãe", "Lorde Norte", "Rei", "Guerreiro", "Charlotte Master", "Rosell Tactician", "Ars God", "Silvia Storm", "Stone Golem", "Silvia", "Appraiser Deity"],
+    "Frieren": ["Linie", "Draht", "Lugner", "Wirbel", "Denken", "Laufen", "Richter", "Kanne", "Lawine", "Ubel", "Land", "Methode", "Eisen", "Heiter", "Kraft", "Stark", "Fern", "Himmel", "Qual", "Aura", "Macht", "Flamme", "Serie", "Frieren"],
+    "Future Diary": ["Yomotsu", "John", "Karyuudo", "Kamado", "Marco", "Ai", "Tsubaki", "Reisuke", "Keigo", "Takao", "Ouji", "Hinata", "Mao", "Rea", "Kurusu", "Minene", "Akise Aru", "Murmur", "Yukiteru", "Yuno Gasai", "Minene God", "Yukiteru God", "Yuno Goddess", "Deus Ex Machina"],
+    "Goblin Slayer": ["Goblin", "Shaman", "Champion", "Lord", "Farm Girl", "Guild Girl", "Spearman", "Witch", "Rookie", "Scout", "Captain", "Bispo Supremo", "Elf Archer", "Dwarf", "Lizard", "Priestess", "Goblin Slayer", "Sword Maiden", "Priestess High", "Elf Master", "Slayer Berserk", "Maiden Young", "Heroine", "Legendary Hero"],
+    "Gods' Games We Play": ["Student", "Judge", "Rival", "Minor God", "Pearl", "Miranda", "Nel", "Darkness", "Light", "Shadow", "Leoleshea", "Fay", "Dax", "Mithra", "Gerard", "Tiamat", "Awakened Lea", "Fay Slayer", "Pearl Master", "Nel Spirit", "Primordial God", "Game Creator", "Fay Legend", "God Game Master"],
+    "Hell's Paradise": ["Sentensa", "Monstro A", "Monstro B", "Toma", "Nurugai", "Tenza", "Senta", "Fuchi", "Shion", "Sagiri", "Gabimaru", "Mu Dan", "Ran", "Tao Fa", "Ju He", "Gui Fa", "Zhu Jin", "Gabimaru Vaso", "Sagiri Tao", "Chobe Flower", "Rien", "Shija", "Gabimaru Hollow", "Tensen Lord"],
+    "Horimiya": ["Tanihara", "Iura", "Honoka", "Sawada", "Dad", "Mom", "Yuki", "Toru", "Remi", "Sakura", "Sengoku", "Shu", "Miyamura Short", "Hori School", "Souta", "Kyosuke", "Piercing Miya", "Kyoko Hori", "Hori Angry", "Miyamura Long", "Duo", "Wedding Hori", "Wedding Miya", "Eternal HoriMiya"],
+    "Hyouka": ["Student", "Professor", "Librarian", "Zempu", "Sekitani", "Kaho", "Jirou", "Irisu", "Tomoe Oreki", "Satoshi", "Mayaka", "Chitanda", "Hotaro", "Chitanda Curious", "Hotaro Lazy", "Satoshi Database", "Mayaka Cosplay", "Chitanda Kimono", "Hotaro Det", "Irisu Empress", "Classics Club", "Duo", "Rose Color", "Hyouka Legend"],
+    "Irina: Vampire Cosmonaut": ["Scientist", "Guard", "Politician", "Pilot", "Natalia", "Fedor", "Slava", "Anya", "Lev", "Irina Luminesk", "Irina Vampire", "Lev Astronaut", "Anya Sci", "Irina Training", "Irina Space", "Lev Hero", "N44", "K88", "Irina Flight", "Lev Commander", "Red Moon", "Duo", "Cosmos", "Irina Goddess"],
+    "Jujutsu Kaisen": ["Miwa", "Mai", "Todo", "Nanami", "Panda", "Inumaki", "Maki", "Nobara", "Megumi", "Yuji Itadori", "Geto", "Mahito", "Jogo", "Hanami", "Choso", "Toji Fushiguro", "Yuki Tsukumo", "Yuta Okkotsu", "Sukuna 15", "Satoru Gojo", "Uraume", "Mahoraga", "Sukuna Heian", "Gojo Void"],
+    "Kaguya-sama": ["Narrator", "Tanuma", "Kashiwagi", "Maki", "Tsubame", "Onodera", "Karen", "Erika", "Kei", "Hayasaka Maid", "Papagane", "Ishigami", "Iino", "Chika", "Miyuki", "Kaguya", "Hayasaka Real", "Bakaguya", "Shirogane Exam", "Chika Dance", "Kaguya Kiss", "Kaguya Moon", "Kaguya Miyuki Duo", "Shinomiya Legend"],
+    "Kaiju No. 8": ["Kaiju Comum", "Iharu", "Haruichi", "Aoi", "Okonogi", "Konomi", "Kikoru Uniform", "Reno Uniform", "Kafka Uniform", "Soshiru Hoshina", "Mina Ashiro", "Kikoru Shinomiya", "Reno Ichikawa", "Kaiju No 9", "Kaiju No 10", "Hoshina Unleashed", "Mina Tiger", "Kafka Monster", "Kaiju No 8", "Kaiju No 1", "Isao Shinomiya", "Gen Narumi", "Kafka Elite", "Kaiju No 8 Final"],
+    "Kashiwada-san and Oota-kun": ["Classmate A", "Classmate B", "Professor", "Store Clerk", "Passerby", "Oota Friend", "Kashiwada Friend", "Oota Sister", "Oota School", "Kashiwada School", "Oota Angry", "Kashiwada Smile", "Oota Blushed", "Kashiwada Cute", "Selfie Moment", "Duo", "Kashiwada Date", "Oota Protector", "Kashiwada Real", "Oota Serious", "Kashiwada Expressive", "Oota Lover", "Kashiwada Oota Duo", "Silent Love Legend"],
+    "Konohana Kitan": ["Guest", "Spirit", "River God", "Ren", "Natsume", "Yuzu", "Kiri", "Sakura", "Yuzu Clean", "Kiri Manager", "Ren Beauty", "Natsume Energy", "Sakura Cute", "Tree Spirit", "Sun Goddess", "Yuzu Spirit", "Konohanatei", "Yuzu Satsuki Duo", "Satsuki Dance", "Yuzu Guardian", "Satsuki Inverno", "Satsuki Goddess", "Satsuki", "Yuzu Celestial"],
+    "Manaria Friends": ["Student", "Librarian", "Dragon", "Magic Prof", "Gwyne", "Owen", "Hanna", "Miranda", "Lou", "William", "Heinlein", "Anne Student", "Grea Student", "Anne Light", "Grea Dragon", "Anne Power", "Grea Princess", "Anne", "Grea Flame", "Library Duo", "Piano Duo", "Grea Zenith", "Anne Grea Bond", "Manaria Legend"],
+    "Mecha-Ude": ["Citizen", "Member", "Soldado", "Rival", "Aki", "Jun", "Nao", "Murai", "Yura", "Tohru", "Almar", "Arma", "Hikaru", "Alma", "Mecha-Ude Common", "Hikaru Sync", "Alma Power", "Cagari", "Hikaru Full Sync", "Alma Final", "Aki Combat", "Legendary Mecha", "Divine Sync", "Mecha-Ude Master"],
+    "Momose Akira": ["Student", "Friend", "Professor", "Rival", "Mom", "Dad", "Akira Uniform", "Hatsukoi", "Moment A", "Moment B", "Love Letter", "Lembrança", "Momose Akira", "Hatsukoi Form", "Akira Blushed", "Akira Date", "Akira Sad", "Akira Happy", "Akira Memory", "Akira Promise", "Momose Duo", "Akira Wedding", "Momose Adult", "Eternal First Love"],
+    "Mushoku Tensei": ["Paul", "Zenith", "Lilia", "Pax", "Sauros", "Philip", "Hilda", "Ghislaine", "Geese", "Elinalise", "Talhand", "Cliff", "Zanoba", "Sylphiette", "Eris Greyrat", "Rudeus Greyrat", "Orsted", "Kishirika", "Perugius", "Badigadi", "Atofe", "Rudeus Armor", "Roxy Migurdia", "Rudeus Magic God"],
+    "My Dress-Up Darling": ["Gojo Grandpa", "Nowa", "Nobara", "Student", "Sajuna Inui", "Shinju Inui", "Gojo Sew", "Marin Uniform", "Marin Shizuku", "Marin Lobelia", "Marin Veronica", "Marin Arisa", "Marin Rei", "Wakana Gojo", "Marin Kitagawa", "Marin Bikini", "Marin Maid", "Gojo Pride", "Marin Shopping", "Marin Gojo Duo", "Marin Love", "Marin Cosplay Queen", "Marin Kitagawa Legend", "Marin Kitagawa Goddess"],
+    "My Instant Kill Ability": ["Student", "Enemy Mage", "Knight", "Dragon", "Class Rival", "Tactician", "Lain", "Sion", "Aoi", "Yogiri Child", "Tomochika School", "Mokichi", "Masayuki", "Rick", "The Sage", "Mana", "Tomochika Dannoura", "Yogiri Takatou", "Dannoura Style", "Yogiri Unleashed", "Tomochika Blessing", "Sion Final", "Destiny", "Yogiri End of All"],
+    "My Status as Assassin": ["Guarda", "Aldeão", "Assassino", "Membro", "Rei", "Mago Negro", "Saran", "Kyura", "Lana", "Mestra", "Rival", "Princesa", "Amelia", "Akira Oda", "Akira Step", "Saran Elite", "Akira Form", "Akira Master", "Saran Master", "Akira God Death", "O Império", "Vingança", "Akira Hero", "Akira Oda Legend"],
+    "My Teen Rom-Com SNAFU": ["Sagami", "Tobe", "Ebina", "Yamato", "Zaimokuza", "Kawasaki", "Orimoto", "Haruno Adult", "Komachi School", "Totsuka", "Hiratsuka", "Hayato", "Iroha", "Yui Yuigahama", "Yukino Yukinoshita", "Hachiman", "Haruno", "Komachi", "Yui Smile", "Yukino Gelo", "Hachiman Serious", "Service Club", "Yui & Yukino Duo", "SNAFU Legend"],
+    "Myriad Colors Phantom World": ["Phantom A", "Phantom B", "Student", "Professor", "Enigma", "Ruru", "Kurumi", "Koito", "Reina", "Mai", "Haruhiko", "Ruru Big", "Kurumi Bear", "Koito Sound", "Reina Eat", "Mai Elements", "Haruhiko Draw", "Mai Kawakami", "Reina Izumi", "Haruhiko Summon", "World of Phantoms", "Duo", "Phantom Soul", "Phantom World Legend"],
+    "Neon Genesis Evangelion": ["NERV Op", "Soldier", "Scientist", "Pen Pen", "Gendo", "Fuyutsuki", "Kaji", "Toji", "Kensuke", "Hikari", "Mari", "Ritsuko", "Misato", "Kaworu", "Asuka", "Rei", "Shinji", "Eva-00", "Eva-02", "Eva-01", "Ramiel", "Sachiel", "Third Impact", "Eva Legend"],
+    "Non Non Biyori": ["Student", "Villager", "Hikage", "Kazuho", "Kaede", "Suguru", "Konomi", "Natsumi Child", "Komari Child", "Hotaru Tokyo", "Renge Artist", "Kaede Shop", "Natsumi", "Komari", "Hotaru", "Renge", "Guu", "Summer", "Winter", "Nyanpassu!", "Renge Genius", "Duo", "Village Peace", "Non Non Biyori Legend"],
+    "Noragami": ["Spirit", "Citizen", "Tenjin", "Mayu", "Kuraha", "Nora", "Kazuma", "Kofuku", "Daikoku", "Bishamon", "Yukine", "Hiyori", "Yato", "Yato Past", "Yukine Vessel", "Bishamon War", "Hiyori Half", "Kazuma Blessed", "Ebisu", "Izanami", "Yato Fortune", "Silver Bond", "God of Calamity", "Noragami Legend"],
+    "Oreimo": ["Student", "Otaku", "Manami", "Sena", "Bridget", "Saori", "Kanako", "Ayase", "Kuroneko", "Kirino", "Kyousuke", "Ayase Yandere", "Kuroneko Goth", "Kirino School", "Kirino Model", "Kuroneko Ruri", "Ayase Cosplay", "Kuroneko Shiro", "Kirino Angry", "Duo", "Brothers", "Destiny", "Oreimo Legend", "Oreimo Finale"],
+    "Our Last Crusade": ["Soldier", "Unit Member", "Captain", "General", "Mismis", "Jinn", "Nene", "Rin", "Salinger", "Nameless", "Rin Visage", "Sovereign", "Astral Power", "Destiny", "Ice and Sword", "Aliceliese Casual", "Iska Casual", "Iska Duel", "Iska", "Rin Shadow", "Duo", "Eternal Peace", "Aliceliese Lou Nebulis IX", "Crusade Legend"],
+    "OverTake!": ["Mechanic", "Racing Fan", "Junior Pilot", "Team Member", "Photographer", "Rival", "Etsuro", "Satsuki", "Toshiki", "Arisu", "Kouya Madoka", "Haruka Asahina", "Madoka Cam", "Asahina Helmet", "F4 Car", "Fuji Track", "Victory", "Defeat", "Komaki Team", "Asahina Podium", "Speed", "Spirit", "OverTake Legend", "World Champion"],
+    "Overflow": ["Classmate", "Neighbor", "Friend", "Kotane Child", "Ayane Child", "Kazushi Child", "Kotane School", "Ayane School", "Kazushi School", "Kotane Blushed", "Ayane Blushed", "Kazushi Serious", "Kotane Shirakawa", "Ayane Shirakawa", "Kazushi Sudo", "Bath Together", "Memory", "Summer Promise", "Duo", "Kotane & Kazushi", "Ayane & Kazushi", "Bond", "Overflow Legend", "Overflow Heart"],
+    "Overlord": ["Gazef", "Brain", "Clementine", "Yuri Alpha", "Lupusregina", "Narberal", "CZ2128", "Solution", "Entoma", "Evileye", "Enri", "Nfirea", "Pandora", "Sebas", "Aura", "Mare", "Demiurge", "Cocytus", "Victim", "Gargantua", "Shalltear", "Albedo", "Momon", "Ainz Ooal Gown"],
+    "Pluto": ["Darius XIV", "Helena", "Abullah", "Sahad", "Roosevelt", "Ochanomizu", "Brau-1589", "Mont Blanc", "North No 2", "Brando", "Hercules", "Epsilon", "Uran", "Atom Tobio", "Gesicht Det", "Gesicht Berserk", "Pluto Monster", "Atom Awakened", "Gesicht", "Atom", "Bora", "Abullah Final", "Sahad Hate", "Atom God Form"],
+    "Rascal Does Not Dream": ["Classmate", "Professor", "Mai Fan", "Nodoka Idol", "Kaede Panda", "Rio Lab", "Tomoe School", "Mai Bunny", "Sakuta", "Kaede", "Tomoe Koga", "Rio Futaba", "Nodoka", "Shoko Makinohara", "Mai Sakurajima", "Shoko Child", "Makinohara Adult", "Mai Actress", "Sakuta Hero", "Mai & Sakuta Duo", "Bunny Girl Legend", "Bunny Girl Spirit", "Mai Sakurajima God", "Bunny Girl Senpai Forever"],
+    "Record of Ragnarok": ["Randgriz", "Reginleif", "Hrist", "Alvitr", "Hlokk", "Goll", "Lu Bu", "Thor", "Zeus", "Adam", "Poseidon", "Sasaki Kojiro", "Jack the Ripper", "Heracles", "Shiva", "Raiden", "Qin Shi Huang", "Hades", "Nikola Tesla", "Beelzebub", "Buddha", "Zerofuku", "Brunhilde", "Father of Humanity Adam"],
+    "Rewrite": ["Imamiya", "Nishijun", "Esaka", "Gen", "Midou", "Tenma", "Kotori Kanbe", "Chihaya", "Akane Senri", "Shizuru", "Lucia", "Kagari", "Kotarou Rewrite", "Yoshino", "Sakuya", "Pani", "Gil", "Kotarou Child", "Akane Holy", "Lucia Sword", "Kagari Key", "Kotarou Kagari Duo", "Aurora", "Kotarou Moon Mode"],
+    "Re:Zero": ["Petra", "Frederica", "Otto", "Garfiel", "Felix", "Crusch", "Julius", "Wilhelm", "Felt", "Anastasia", "Priscilla", "Elsa", "Meili", "Petelgeuse", "Regulus", "Beatrice", "Roswaal", "Emilia", "Rem", "Ram", "Subaru Natsuki", "Reinhard", "Satella", "Subaru Return Death"],
+    "Rich Girl Caretaker": ["Classmate", "Neighbor", "Passerby", "Professor", "Dad", "Mom", "Protagonist", "Work Mode", "Care Mode", "Rich Girl Uniform", "Rich Girl Casual", "Rich Girl Sleepy", "Dinner Moment", "Study Moment", "Lembrança", "Blushed Girl", "Sad Girl", "Happy Girl", "Serious Boy", "Dress Mode", "Date Moment", "Care Bond", "Promise", "Eternal Caretaker"],
+    "Seiren": ["Student", "Member", "Professor", "Shoichi Sister", "Shoichi Friend", "Shoichi Kamita", "Hikari Tsuneki", "Toru Miyamae", "Kyoko Tono", "Miu Sanshou", "Makoto", "Tomoe", "Hikari Beach", "Toru Gamer", "Kyoko School", "Hikari Casual", "Toru Casual", "Kyoko Casual", "Hikari Moment", "Toru Moment", "Kyoko Moment", "Shoichi Hikari Duo", "Shoichi Toru Duo", "Summer Love Legend"],
+    "Sentenced to Be a Hero": ["Aldeão", "Prisioneiro", "Guarda", "Demon Soldier", "Unit Member", "Kingdom Mage", "Zion", "Zion Armor", "Hylia", "Demon Lord", "Dark Warrior", "Princess", "Zion Dual", "Hylia Magic", "Zion Berserk", "Sentence Hero", "Holy War", "Redemption", "Zion Paladin", "Hylia Saint", "Sacrifice", "Condemned Hero", "Light Hope", "Eternal Savior"],
+    "Seraph of the End": ["JIDA Soldier", "Vampire", "Shiho", "Yoichi", "Mitsuba", "Shinoa Maid", "Guren", "Ferid", "Crowley", "Shinya", "Asuramaru", "Krul Tepes Queen", "Mikaela Human", "Yuichiro Human", "Mikaela Vampire", "Krul Tepes", "Shinoa Hiragi", "Yuichiro Hyakuya", "Guren Possessed", "Mikaela Seraph", "Yuu Seraph", "Salt King", "Krul Mikaela Duo", "Seraph End Legend"],
+    "Shingeki no Bahamut: Genesis": ["Citizen", "Knight", "Angel", "Demon", "Rita Zombie", "Rita Doc", "Kaisar", "Favaro", "Amira", "Jeanne d'Arc", "Azazel", "Lucifer", "Beelzebub", "Martinet", "Baco", "Amira Wing", "Jeanne Leader", "Favaro Afro", "Kaisar Elite", "Azazel Revenge", "Bahamut Awake", "Favaro Bond", "Amira Final", "Bahamut God Ender"],
+    "Shingeki no Bahamut: Virgin Soul": ["Soldier", "Angel", "Mugaro", "Nina Human", "Charioce XVII", "Nina Dragon", "Favaro Older", "Kaisar General", "Rita Master", "Azazel Prisoner", "Alessand", "Nina Casual", "Charioce King", "Mugaro El", "Nina Charioce Duo", "Jeanne Mother", "Sofiel", "Lucifer", "Bahamut Return", "Nina Awake", "Nina Bracelet", "Charioce Final", "Human Dragon Love", "Virgin Soul Legend"],
+    "Shinobi no Ittoki": ["Ninja A", "Ninja B", "Student", "Professor", "Rival", "Ittoki Mom", "Kousetsu", "Tokine Sakuraba", "Ryoko Suzuno", "Himane", "Ittoki School", "Ittoki Suit", "Kousetsu Mask", "Tokine Elite", "Ryoko Inventor", "Ittoki Sakuraba", "Iga Chief", "Koga Battle", "Ittoki Awake", "Kousetsu Step", "Shinobi War", "Iga Blade", "Blood Bond", "Grandmaster Ittoki"],
+    "Sword Art Online": ["Soldier", "Sachi", "Agil", "Klein", "Silica", "Lisbeth", "Yui", "Leafa", "Sinon GGO", "Eugeo", "Quinella", "Heathcliff", "Oberon", "Death Gun", "Alice Thirty", "Asuna Yuuki", "Kirito", "Kirito Dual", "Asuna Stacia", "Sinon Solus", "Leafa Terraria", "Kirito Star King", "Kirito Asuna Duo", "SAO Legend"],
+    "Taboo Tattoo": ["Soldier", "Unit Member", "Rival", "Professor", "Tom", "Lisa", "Sanders", "Kar Shekar", "Wiseman", "Iltutmish", "Lurker", "Cal Shekar", "Aryabhata Princess", "Touko", "Izzy", "Seigi", "Izzy Awake", "Seigi Power", "Aryabhata Final", "Izzy Tattoo", "Seigi Void", "Shadow Seal", "Infinite Power", "Tattoo God Seigi"],
+    "That Time I Got Reincarnated as a Slime": ["Gobta", "Rigurd", "Ranga", "Gabiru", "Souei", "Shion", "Shuna", "Hakuro", "Benimaru", "Milim Nava", "Veldora", "Ramiris", "Diablo", "Guy Crimson", "Luminous", "Hinata", "Rimuru Tempest", "Milim Battle", "Rimuru Demon Lord", "Diablo Master", "Veldora Dragon", "Rimuru God", "Velzard", "Rimuru Ciel"],
+    "The Angel Next Door": ["Student", "Member", "Professor", "Amane Dad", "Amane Mom", "Mahiru Dad", "Mahiru Mom", "Chitose", "Itsuki", "Amane Uniform", "Mahiru Uniform", "Amane Casual", "Mahiru Casual", "Mahiru Cooking", "Mahiru Sick", "Rain Memory", "Amane Serious", "Mahiru Shiina", "Angelic Smile", "Apartment Duo", "Encontro", "Christmas", "Wedding Mahiru", "Eternal Love"],
+    "The Aristocrat's Adventure": ["Adventurer", "King", "Duque", "Mentor", "Rival", "Minor God", "Reine", "Teles", "Silk", "Cain von Silford", "Milly", "Nina", "Tiffana", "Garm", "Sarah", "Cain 7 Gods", "Cain Rank S", "Teles Silk Duo", "Creation Gods", "Cain Evil King", "Divine Power", "Cain Demigod", "Silvia", "Aristocrat Legend"],
+    "The Daily Life of the Immortal King": ["Student", "Council", "Rival", "Toad", "Ling Dad", "Ling Mom", "Chen Chao", "Guo Hao", "Zhuo Yi", "Sun Rong", "Wang Ling Normal", "Power Seal", "Amulet", "Sun Rong Sword", "Wang Ling Serious", "Wang Ling Cold", "Jingke Sword", "Wang Ling", "Wang Ling Unleashed", "Sun Rong Awake", "Immortal Dimension", "Creator Ling", "World Destroy", "Immortal Emperor Ling"],
+    "The Dangers in My Head": ["Classmate", "Professor", "Girl", "Kyotaro Sister", "Anna Friend", "Anna Dad", "Anna Mom", "Adachi", "Hara", "Kana", "Kyotaro Start", "Anna Model", "Ichikawa School", "Yamada School", "Library", "Yamada Blush", "Ichikawa Protect", "Yamada Hungry", "Ichikawa Love", "Yamada Love", "Bicycle", "Duo", "Anna Angel", "First Love Legend"],
+    "The Detective Is Already Dead": ["Passenger", "Agent", "Citizen", "Rival", "Alicia", "Charlotte", "Yui Saikawa", "Nagisa", "Kimizuka", "Siesta", "Siesta Wedding", "Nagisa Heart", "Charlotte Elite", "Kimizuka Hero", "Siesta Normal", "Hel", "Brain", "Siesta Legacy", "Siesta Spirit", "Duo", "Nagisa Alicia", "Death", "Final Case", "Legendary Detective"],
+    "The Eminence in Shadow": ["Membro Diabolos", "Soldado Real", "Zeta", "Eta", "Nu", "Victoria", "Rose Oriana", "Alexia Midgar", "Iris Midgar", "Claire Kagenou", "Annerose", "Aurora", "Epsilon", "Delta", "Gamma", "Beta", "Alpha", "Shadow Cid", "Atomic Burst", "Shadow Garden", "Shadow Aurora Duo", "Claire Possessed", "Cid Kagenou", "Shadow"],
+    "The Foolish Angel Dances with the Demon": ["Estudante", "Conselho", "Demônio", "Anjo", "Tanigawa", "Hirota", "Chiro", "Chum", "Lily Cat", "Akutsu Angry", "Lily Hunter", "Lily Uniform", "Masatora Uniform", "Lily Wings", "Akutsu Mode", "Zwei", "Zena", "Lily Amane", "Akutsu Masatora", "Lily Battle", "Akutsu Awake", "Lily Akutsu Duo", "Lily Goddess", "Angel Demon Love"],
+    "The Girl I Like Forgot Her Glasses": ["Student", "Professor", "Komura Friend", "Mie Friend", "Dad", "Mom", "Mie Uniform", "Komura Uniform", "Mie No Glasses", "Searching", "Blushed", "New Glasses", "Kaede Komura", "Ai Mie", "Mie Smile", "Komura Protect", "Date", "Memory", "Love", "Mie Cute", "Selfie", "Mie Komura Duo", "Wedding Mie", "Eternal Look"],
+    "The Greatest Demon Lord Is Reborn": ["Magic Student", "Soldier", "Lord", "Monster", "Mentor", "Rival", "Lydia", "Sylphy", "Ireena", "Ginny", "Ard Meteor", "Varvatos Past", "Ard School", "Ireena Saint", "Ginny Succubus", "Lydia Hero", "Ard Serious", "Varvatos King", "Power Unlocked", "Ireena Ginny Duo", "Varvatos God", "Ard Demon King", "Destiny", "Greatest Legend"],
+    "The Misfit of Demon King Academy": ["Student", "Noble", "Eris", "Emilia", "Zepes", "Ivis", "Eleonore", "Zethia", "Shin Reglia", "Misa", "Lay", "Sasha", "Anos Voldigoad", "Child Anos", "Valkyrie Sasha", "Guardian Misha", "School Anos", "Venuzdonoa", "Demon King Form", "Misha Necron God", "Sasha Misha Duo", "Serious Anos", "Misha Necron", "Anos Voldigoad Tyrant"],
+    "The Rising of the Shield Hero": ["Soldier", "Villager", "Motoyasu", "Ren", "Itsuki", "Malty", "Aultcray", "L'Arc", "Therese", "Glass", "Fitoria", "Melty", "Filo Bird", "Child Raphtalia", "Filo", "Raphtalia", "Naofumi Iwatani", "Iron Maiden", "Katana Hero", "Queen Filo", "Wrath Shield", "Heavenly Destiny", "Naofumi Raphtalia Duo", "Shield God Naofumi"],
+    "The Tunnel to Summer": ["Citizen", "Student", "Passerby", "Dad", "Sister", "Friend", "Anzu Uniform", "Kaoru Uniform", "Tunnel", "Memory", "Kaoru Tono", "Anzu Hanashiro", "Kaoru Summer", "Anzu Summer", "Urashima Tunnel", "Desire", "Promise", "Kaoru Anzu Duo", "Older Kaoru", "Older Anzu", "Future Encontro", "Tunnel Bond", "Lost Time", "Summer Legend"],
+    "Tonikaku Kawaii": ["Kaname", "Aya", "Chitose", "Charlotte", "Aurora", "Dad", "Mom", "Tokiko", "Nasa Work", "Tsukasa Kimono", "Tsukasa Uniform", "Nasa Fujimaru", "Nasa Yuzaki", "Tsukasa Yuzaki", "Tsukasa Waitress", "Nasa Serious", "Blushed", "Kiss", "Apartment", "Dress", "Stars", "Past", "1000 Year Bond", "Princess Kaguya"],
+    "Toradora": ["Professor", "Student", "Mom Ryuuji", "Mom Taiga", "Inko", "Sumire", "Sakura", "Maya", "Yusaku Kitamura", "Minori Kushieda", "Ami Kawashima", "Ryuuji Takasu", "Taiga Aisaka", "Taiga Bikini", "Ami Model", "Minori Baseball", "Apron Ryuuji", "Taiga Angry", "Christmas", "Santa", "Taiga Ryuuji Duo", "Taiga Wedding", "Ryuuji Wedding", "Palmtop Tiger"],
+    "Tsukimichi: Moonlit Fantasy": ["Villager", "Orc", "Dwarf", "Strategist", "Emma", "Beren", "Shiki", "Mio Human", "Tomoe Human", "Makoto Misumi", "Tomoe Dragon", "Mio Spider", "Archer Makoto", "Lich Shiki", "Mana Armor", "Elite Tomoe", "Elite Mio", "Goddess", "Serious Makoto", "Tomoe Mio Duo", "Cid", "God Mode", "Makoto World", "Goddess Rival"],
+    "Tune In to the Midnight Heart": ["Listener", "Student", "Prof", "Rival", "Memory A", "Memory B", "Rikka", "Nene", "Shinobu", "Hana", "Arisu Yamabuki", "Radio Mode", "Rikka Idol", "Nene Artist", "Shinobu Athlete", "Hana Model", "Apollo Voice", "Serious Arisu", "Arisu Rikka", "Arisu Nene", "Arisu Shinobu", "Arisu Hana", "Apollo Mystery", "Midnight Bond"],
+    "Uma Musume Pretty Derby": ["Trainer", "Fan", "Reporter", "Rival", "Gold Ship", "Mejiro McQueen", "Silence Suzuka", "Special Week", "Tokai Teio", "Rice Shower", "Vodka", "Daiwa Scarlet", "Oguri Cap", "Tamamo Cross", "Winning Special", "Step Teio", "Chaos Ship", "Grace McQueen", "Speed Suzuka", "Final Race", "Victory", "Dream", "Derby Legend", "Derby Goddess"],
+    "Wind Breaker": ["Delinquent", "Villager", "Student", "Rival", "Sugishita", "Suo", "Nirei", "Hiragi", "Umemiya", "Sakura", "Bofurin Sakura", "Combat Suo", "Leader Umemiya", "Berserk Sugishita", "Notebook Nirei", "Serious Sakura", "Serious Umemiya", "Bofurin Unit", "Shishitoren", "Awakened Sakura", "Power Umemiya", "Protector", "Bond", "Bofurin Captain"],
+    "Wistoria: Wand and Sword": ["Student", "Monster", "Prof", "Rival", "Rosty", "Lante", "Wignall", "Julius", "Sion", "Colette", "Will Serfort", "Elfaria Alvis Serfort", "Dual Blades", "Ice Queen Mode", "Support Colette", "Fire Sion", "Berserk Will", "Tower Master", "Swordmaster Will", "Divine Mage Elfaria", "Wistoria Power", "Will Elfaria Duo", "Contract", "Wand and Sword Legend"],
+    "Childhood Friend Rom-Com": ["Student", "Classmate", "Prof", "Rival", "Friend", "Mom", "Shio", "Akari", "Petos", "Childhood Mode", "Rom-Com Mode", "Uniform", "Blushed Shio", "Happy Akari", "Sad Moment", "Love Letter", "Beach Trip", "Summer Festival", "Confession", "Rejection", "Truth", "Duo", "Wedding", "Rom-Com Ending"],
+    "One Punch Man": ["Citizen A", "Mosquito Girl", "Vaccine Man", "Speed-o-Sound Sonic", "Mumen Rider", "Tank Top Master", "Puri-Puri Prisoner", "Metal Knight", "Zombieman", "Atomic Samurai", "Child Emperor", "Watchdog Man", "Superalloy Darkshine", "Genos", "Fubuki", "Tatsumaki", "Bang", "King", "Garou Human", "Garou Monster", "Boros", "Saitama Serious", "Saitama Bald Cape", "Saitama One Punch"],
+    "One Piece": ["Marine A", "Buggy", "Alvida", "Arlong", "Crocodile", "Enel", "Bellamy", "Foxy", "Wapol", "Moria", "Kuma", "Doflamingo", "Katakuri", "Nico Robin", "Boa Hancock", "Trafalgar Law", "Sabo", "Ace Flashback", "Yamato", "Zoro Onigiri", "Sanji Diable", "Luffy Gear4", "Luffy Gear5", "Luffy Joyboy"],
+    "Fairy Tail": ["Guild Member", "Vulcan", "Bora", "Byro", "Angel", "Cobra", "Racer", "Sherry", "Ur Ice-Make", "Ultear", "Kagura", "Minerva", "Mirajane", "Lucy Heartfilia", "Erza Scarlet", "Wendy Marvell", "Juvia Lockser", "Natsu Dragneel", "Gajeel Redfox", "Laxus Dreyar", "Zeref", "Gray Fullbuster", "Acnologia", "Natsu Dragon King"],
+    "Blue Lock": ["Player A", "Player B", "Coach", "Scout", "Reo", "Chigiri", "Kunigami", "Bachira", "Nagi", "Barou", "Rin Itoshi", "Isagi Serious", "Isagi Awaken", "Ego Jinpachi", "Kaiser", "Ness", "Shidou", "Niko", "Barou Beast", "Rin Monster", "Isagi Direct", "Isagi Weapon Eyes", "Team Blue Lock", "Isagi World"],
+    "Code Geass": ["Soldier", "Student", "Britannia Knight", "Diethard", "Jeremiah", "Rolo", "Cornelia", "Schneizel", "Todoh", "Kaguya", "Rivalz", "Nina", "Kallen Kozuki", "Suzaku Kururugi", "Shirley Fenette", "C.C.", "Nunnally", "Euphemia", "Lelouch Zero", "Lelouch Emperor", "Charles zi Britannia", "V.V.", "Lelouch Geass King", "Zero Requiem"],
+    "Blue Exorcist": ["Exwire", "Demon A", "Izumo", "Shiemi", "Konekomaru", "Bon Suguro", "Renzo Shima", "Noriko", "Amaimon", "Mephisto Pheles", "Todo", "Lightning", "Shura Kirigakure", "Yukio Okumura", "Rin Okumura", "Satan", "Yuri Egin", "Ashura Kurikara", "Rin Blue Flame", "Yukio Aria", "Satan True Form", "Rin Demon King", "Shiro Fujimoto", "Rin Awakened"],
+    "Mashle": ["Student A", "Student B", "Teacher", "Rayne", "Finn", "Lemon Irvine", "Dot Barrett", "Kaiser Impft", "Wahlberg Roy", "Orter Rembrandt", "Abel Wilt", "Innocent Zero", "Margarette Macaron", "Lemon Serious", "Finn Roid", "Wahlberg Punch", "Mash Push-up", "Dot Awaken", "Innocent Zero Final", "Mash Muscle", "Mash Serious", "Mash No Magic", "Mash Divine Vessel", "Mash God Muscle"],
+    "Mob Psycho 100": ["Student A", "Delinquent", "Teruki", "Ritsu", "Tome", "Ekubo", "Dimple", "Musclehead Master", "Serizawa", "Reigen Arataka", "Sho Suzuki", "Toichiro Suzuki", "Claw Member", "Psycho Helmet Cult", "Mogami", "Mob Emotion", "Mob 100%", "Ritsu Awake", "Dimple God", "Reigen Fake Power", "Mob Explosive", "Mob ???%", "Mob True Power", "Kageyama God"],
+    "Zom 100": ["Zombie A", "Coworker", "Kencho", "Beatrix", "Shizuka", "Ikeda", "Ryuzo", "Kagami", "Erika", "Yamada", "Kotaro", "Kudo", "Boss Zombie", "Alpha Zombie", "Akira Tendo Suit", "Akira Tendo Free", "Kencho Zombie", "Shizuka Cop", "Beatrix Fighter", "Erika Fighter", "Akira Bucket List", "Akira Adventure", "Akira Zombie Apocalypse King", "Zom100 Legend"],
+    "Dr. Stone": ["Villager", "Hunter", "Kohaku Tribe", "Ruri Village", "Chrome", "Kaseki", "Ginro", "Magma", "Nikki", "Homura", "Ukyo Saionji", "Amaryllis", "Xeno", "Ryusui Nanami", "Suika", "Kohaku", "Yuzuriha Ogawa", "Gen Asagiri", "Taiju Oki", "Tsukasa Shishio", "Senku Serious", "Byakuya Ishigami", "Senku Full Science", "Senku Kingdom of Science"],
+    "Fullmetal Alchemist": ["Soldier", "State Alchemist", "Barry the Chopper", "Lust", "Gluttony", "Envy", "Sloth", "Greed", "Wrath", "Pride", "King Bradley", "Roy Mustang", "Riza Hawkeye", "Winry Rockbell", "May Chang", "Izumi Curtis", "Olivier Armstrong", "Alphonse Elric Armor", "Alphonse Elric Human", "Scar", "Van Hohenheim", "Father", "Edward Elric Automail", "Edward Elric Truth"],
+    "Konosuba": ["Adventurer A", "Adventurer B", "Vanir", "Chomusuke", "Dust", "Iris", "Wiz", "Chris", "Sylvia", "Yunyun", "Rain", "Beldia", "Verdia", "Hans", "Sena", "Darkness", "Megumin", "Aqua", "Kazuma Serious", "Kazuma Steal King", "Aqua Goddess Awaken", "Megumin Explosion Max", "Party Adventure", "Kazuma Hero Final"],
+    "Clannad": ["Classmate A", "Classmate B", "Teacher", "Yukine Miyazawa", "Kotomi Ichinose", "Fuko Ibuki", "Kyou Fujibayashi", "Ryou Fujibayashi", "Youhei Sunohara", "Akio Furukawa", "Sanae Furukawa", "Naoyuki Okazaki", "Nagisa Bakery", "Nagisa Play", "Tomoya School", "Tomoya Work", "Nagisa Sick", "Ushio", "Nagisa Wife", "Tomoya Father", "Nagisa Illusionary", "Family Bond", "Dango Daikazoku", "Clannad Eternal"],
+    "Your Lie in April": ["Classmate A", "Classmate B", "Teacher", "Emi Igawa", "Nagi Aiza", "Takeshi Aiza", "Ryota Watari", "Hiroko Seto", "Yu Fuji", "Kanae Miyazono", "Saki Miyazono", "Nao Kashiwagi", "Sudden Rain", "Piano Competition", "Kaori Violin", "Kaori Hospital", "Kousei Piano", "Kousei Blind Chords", "Tsubaki Sawabe", "Kousei Serious", "Kaori Smile", "Kousei Awake", "Kaori Melody", "Eternal Sound"],
+    "Vinland Saga": ["Villager", "Slave", "Viking Soldier", "Ragnar", "Askeladd", "Bjorn", "Thorfinn Child", "Ylva", "Gudrid", "Ari", "Snake", "Wales", "Canute Prince", "Ketil", "Einar", "Arnheid", "Thorgil", "Leif Erikson", "Thors", "Thorfinn Farmer", "Canute King", "Thorfinn Warrior", "Thorfinn Peace", "Vinland Dream"],
+    "Attack on Titan": ["Titan Common", "Soldier A", "Hannes", "Sasha Blouse", "Connie Springer", "Jean Kirstein", "Ymir", "Historia Reiss", "Reiner Braun", "Bertholt Hoover", "Annie Leonhart", "Hange Zoe", "Erwin Smith", "Zeke Yeager", "Pieck", "Levi Ackerman", "Female Titan", "Colossal Titan", "Armored Titan", "Beast Titan", "Attack Titan", "Founding Titan", "Eren Rumbling", "Mikasa Ackerman"],
+    "Seven Deadly Sins": ["Villager", "Holy Knight", "Guila", "Golgius", "Gustav", "Jericho", "Griamore", "Hendrickson", "Fraudrin", "Gowther", "King", "Diane", "Ban", "Merlin", "Escanor", "Elizabeth Liones", "Meliodas Base", "Diane Serious", "King Awake", "Escanor Noon", "Merlin Full Power", "Meliodas Demon King", "Meliodas Assault Mode", "Meliodas True Demon"],
+    "JoJo's Bizarre Adventure": ["Passerby", "Stand User A", "Speedwagon", "Dio Brando Young", "Will Anthonio Zeppeli", "Joseph Joestar", "Caesar Zeppeli", "Lisa Lisa", "Wamuu", "Kakyoin", "Polnareff", "Iggy", "Avdol", "Jotaro Kujo", "Josuke Higashikata", "Okuyasu Nijimura", "Rohan Kishibe", "Giorno Giovanna", "Bruno Bucciarati", "Trish Una", "Jolyne Cujoh", "Johnny Joestar", "Dio The World", "Jotaro Star Platinum"],
+    "Tokyo Ghoul": ["Ghoul Common", "Investigator A", "Nishiki Nishio", "Touka Kirishima", "Hinami Fueguchi", "Renji Yomo", "Uta", "Shuu Tsukiyama", "Ayato Kirishima", "Juuzou Suzuya", "Akira Mado", "Koutarou Amon", "Itori", "Roma", "Tatara", "Eto Yoshimura", "Kaneki Half Ghoul", "Kaneki Centipede", "Rize Kamishiro", "Arima Kishou", "Kaneki Owl", "Kaneki One Eyed King", "Touka Awake", "Kaneki Rebirth"],
+    "Hunter x Hunter": ["Applicant A", "Examiner", "Leorio Paladiknight", "Kurapika Student", "Tonpa", "Menchi", "Hisoka Base", "Illumi Zoldyck", "Kite", "Ponzu", "Zushi", "Wing", "Biscuit Krueger", "Chrollo Lucilfer", "Machi", "Feitan", "Meruem", "Netero", "Neferpito", "Killua Zoldyck", "Kurapika Chain Jail", "Hisoka Bungee Gum", "Gon Adult", "Gon Godspeed"],
+    "Kakegurui": ["Student A", "Student B", "Council Member", "Sayaka Igarashi", "Ryota Suzui", "Yumeko Sister", "Kirari Momobami", "Itsuki Sumeragi", "Rirka Sumeragi", "Runa Yomozuki", "Yuriko Nishinotouin", "Mary Saotome", "Midari Ikishima", "Kaede Manyuda", "Erimi Mushibami", "Jun Kiwatari", "Ririka Momobami", "Suzui Debt", "Mary Cheating", "Midari Bloodlust", "Yumeko Serious", "Yumeko Excited", "Yumeko Ultimate Bet", "Yumeko Life Gambler"],
+    "Black Clover": ["Recruta Touros Negros", "Grey", "Vanessa Enoteca", "Gordon Agrippa", "Charmy Pappitson", "Magna Swing", "Luck Voltia", "Noelle Silva", "Finral Roulacase", "Klaus Lunettes", "Mimosa Vermillion", "Yami Sukehiro", "Nozel Silva", "Charlotte Roselei", "Fuegoleon Vermillion", "Noelle Valquiria", "Yami Escuridão Absoluta", "Julius Novachrono", "Licht Elfo", "Yuno Vento Espiritual", "Asta Anti-Magia", "Asta União Demoníaca", "Yuno Rei dos Espíritos", "Asta Cavaleiro Negro Final"],
+    "Boruto": ["Aldeia da Folha Genin", "Metal Lee", "Sarada Uchiha Genin", "Mitsuki Genin", "ChoCho Akimichi", "Konohamaru Sarutobi", "Sumire Kakei", "Shikadai Nara", "Kawaki Base", "Boruto Genin", "Sasuke Mangekyo", "Sarada Sharingan", "Mitsuki Modo Sábio Serpente", "Kawaki Karma", "Boruto Jougan", "Naruto Hokage", "Kawaki Prometheus", "Boruto Karma Completo", "Code Máscara", "Sasuke Rinnegan", "Isshiki Otsutsuki", "Boruto Momoshiki", "Naruto Baryon Mode", "Kawaki Devorador Divino"],
+    "Cyberpunk: Edgerunners": ["Cidadão de Night City", "Pilar", "Kiwi", "Dorio", "Rebecca", "Falco", "Maine Base", "Dorio Rebelde", "David Martinez Base", "Lucy Netrunner", "Rebecca Dupla Pistola", "Kiwi Elite", "Maine Cyberpsico", "David Sandevistan", "Faraday", "Adam Smasher Base", "David Overclock", "Lucy Alt Corrida", "David Berserk Total", "Adam Smasher Cyberpsico Máximo", "David Edgerunner Lendário", "Lucy Rachel", "David Sandevistan Supremo", "David Cérebro Morto Lenda Eterna"],
+    "Death Note": ["Estudante Comum", "Repórter", "Detetive Menor", "Soichiro Yagami", "Matsuda", "Aizawa", "Watari", "Misa Amane Base", "Mello", "Near Base", "Rem", "Ryuk Deus da Morte", "Light Yagami Estudante", "L Lawliet Base", "Misa Segundo Kira", "Near Sucessor de L", "Mello Mafia", "L Detetive Genial", "Light Kira Justiceiro", "Ryuk Entediado Eterno", "L Justiça Absoluta", "Near Vitória Final", "Light Deus do Novo Mundo", "Kira Julgamento Final"],
+    "Fate/Zero": ["Mestre Comum", "Kariya Matou", "Waver Velvet", "Ryuunosuke Uryuu", "Ilyasviel Criança", "Ciren", "Tokiomi Tohsaka", "Kirei Kotomine Base", "Assassin Hassan", "Rider Iskandar Base", "Berserker Lancelot", "Caster Gilles de Rais", "Lancer Diarmuid", "Kiritsugu Emiya Base", "Saber Base Arturia", "Irisviel von Einzbern", "Rider Alexandre o Grande", "Kirei Kotomine Assassino", "Saber Excalibur", "Kiritsugu Matador de Magos", "Gilgamesh Rei dos Heróis", "Saber Rei da Espada Prometida", "Kirei Kotomine Sombra do Graal", "Gilgamesh Portão de Babilônia"],
+    "Log Horizon": ["Jogador Novato", "Nyanta", "Henrietta", "Marielle", "Nazuna", "Serara", "Rundelhaus", "Isuzu", "Akatsuki Base", "Naotsugu", "William Massachusetts", "Krusty", "Michitaka", "Soujiro Seta", "Akatsuki Assassina das Sombras", "Shiroe Estrategista", "Naotsugu Guardião", "Isaac", "Shiroe Sábio Enciclopédia", "Krusty Lorde de Akiba", "Akatsuki Lâmina Fantasma", "Shiroe Mentor das Doze Raças", "Akatsuki Mestra Ninja Suprema", "Shiroe Rei Sombrio de Akiba"],
+    "Magi: The Labyrinth of Magic": ["Aldeão de Balbadd", "Toto", "Goltas", "Spartos", "Sharrkan Base", "Yamuraiha", "Hakuryuu Base", "Kougyoku Base", "Morgiana Escrava", "Ja'far Base", "Masrur", "Sinbad Base", "Alibaba Saluja Base", "Kougyoku Djinn Vermelho", "Hakuryuu Djinn Sombrio", "Morgiana Fanalis Livre", "Ja'far Assassino das Sombras", "Judal Magi Negro", "Alibaba Rei Guerreiro", "Sinbad Rei dos Sete Mares", "Aladdin Magi Base", "Aladdin Salomão Selado", "Sinbad Djinn Equip Supremo", "Aladdin Rei Salomão Desperto"],
+    "My Hero Academia": ["Estudante Comum", "Mineta", "Kirishima", "Ashido", "Jirou", "Kaminari", "Tsuyu Asui", "Ochaco Uraraka Base", "Iida Tenya", "Momo Yaoyorozu", "Shoto Todoroki Base", "Denki Kaminari Choque", "Bakugo Base", "Endeavor Chama", "Aizawa Apagador", "Toga Himiko", "Dabi", "Shigaraki Base", "Todoroki Meio-Frio Meio-Fogo", "Bakugo Explosão Suprema", "All Might Símbolo da Paz", "Shigaraki Destruição Total", "Deku One For All Pleno", "All Might Poder Pleno Lendário"],
+    "Naruto Shippuden": ["Genin da Folha", "Tenten", "Kiba Inuzuka", "Shino Aburame", "Choji Akimichi", "Ino Yamanaka", "Shikamaru Nara", "Sai", "Sakura Haruno Base", "Rock Lee Portões Abertos", "Kakashi Sharingan", "Neji Byakugan", "Hinata Hyuga Base", "Gaara Kazekage", "Itachi Uchiha Base", "Deidara Explosivo", "Sasori Marionetista", "Konan Origami", "Pain Caminhos", "Obito Uchiha Mascarado", "Madara Uchiha Base", "Sasuke Susanoo", "Sasuke Rinnegan Eterno", "Naruto Modo Sábio dos Seis Caminhos"],
+    "No Game No Life": ["Habitante de Disboard", "Elfo Comum", "Anão Comerciante", "Fluegel Menor", "Chlammy Zell", "Fiel Nuamh", "Feel Nuamh", "Steph Dola", "Jibril Base", "Izuna Hatsuse", "Kurami Zell", "Sora Estrategista", "Shiro Gênio", "Jibril Flügel Ancestral", "Sora e Shiro Blank", "Steph Rainha de Elkia", "Izuna Cão de Guerra", "Jibril Devoradora de Conhecimento", "Sora Mestre dos Jogos", "Shiro Deusa dos Números", "Sora e Shiro Imbatíveis", "Tet Deus Único", "Sora e Shiro Xadrez Perfeito", "Blank Lenda Invicta Absoluta"],
+    "Steins;Gate": ["Cidadão de Akihabara", "Moeka Kiryuu", "Yuugo Tennouji", "Faris NyanNyan", "Luka Urushibara", "Suzuha Amane Base", "Itaru Hashida", "Mr. Braun", "Mayuri Shiina Base", "Kurisu Makise Base", "Rintaro Okabe Base", "Suzuha Guerreira do Tempo", "Kurisu Cientista Genial", "Okabe Houou Base", "Mayuri Linha Beta", "Kurisu SERN Fugitiva", "Okabe Salto de Fase", "Suzuha Divergência 1%", "Kurisu Convergência Steins Gate", "Okabe Vinculador de Mundos", "Kurisu Attractor Field", "Okabe Máquina do Tempo Humana", "Kurisu Reading Steiner", "Okabe Hououin Kyouma Lenda do Tempo"],
+    "The Quintessential Quintuplets": ["Colega de Classe", "Raiha Nakano Criança", "Amiga de Infância", "Rento Uesugi", "Maruo Uesugi", "Itsuki Modo Estudo", "Yotsuba Modo Esportes", "Miku Modo Quieta", "Nino Modo Cozinha", "Ichika Modo Atriz", "Itsuki Nakano Base", "Yotsuba Nakano Base", "Miku Nakano Base", "Nino Nakano Base", "Ichika Nakano Base", "Itsuki Determinada", "Yotsuba Corredora", "Miku Apaixonada", "Nino Ciumenta", "Ichika Egoísta", "Futaro Uesugi Tutor", "Quíntuplas Unidas", "Noiva Escolhida", "Cinco Irmãs Idênticas Final"],
+};
+
+const iceEmpresses = {
+    "Akame ga Kill": "Esdeath",
+    "Bleach": "Rukia Kuchiki",
+    "A Returner's Magic": "Azest Ice Queen",
+    "Date A Live": "Yoshino",
+    "Chivalry of a Failed Knight": "Shizuku Kurogane",
+    "Even Given the Worthless Appraiser Class": "Silvia",
+    "Jujutsu Kaisen": "Uraume",
+    "Konohana Kitan": "Satsuki",
+    "Manaria Friends": "Anne",
+    "Mushoku Tensei": "Roxy Migurdia",
+    "Our Last Crusade": "Aliceliese Lou Nebulis IX",
+    "Re:Zero": "Emilia",
+    "That Time I Got Reincarnated as a Slime": "Velzard",
+    "The Aristocrat's Adventure": "Silvia",
+    "The Misfit of Demon King Academy": "Misha Necron",
+    "Wistoria: Wand and Sword": "Elfaria Alvis Serfort"
+};
+
+const rarityNames = ["Comum", "Incomum", "Raro", "Épico", "Lendário", "Mítico", "Secreto", "Divino", "Prismático", "Supremo", "Ancião", "Primordial", "Nuclear", "Cósmico", "Imp. Celeste", "Destruidor", "Ec. Lunar", "Ec. Solar", "Mutilador", "Fundador", "Primeiro", "Celeste", "Anti Matéria", "Imperatriz do Gelo", "Divindade", "Traído pelos Anjos"];
+
+// Texto explicando o critério de cada raridade — usado no card ampliado para
+// justificar "por que essa carta está nessa categoria".
+const rarityReasons = [
+    "Nível de entrada: um personagem coadjuvante ou figurante do anime, sem grandes destaques de poder na trama.",
+    "Um personagem um pouco acima da média, com alguma habilidade ou papel reconhecível na história.",
+    "Já demonstra técnicas ou combate relevante, participando de arcos importantes do anime.",
+    "Possui uma habilidade marcante ou um papel de destaque em batalhas ou momentos-chave.",
+    "Um dos personagens mais fortes ou influentes do elenco secundário, com poder muito acima da média.",
+    "Figura de grande impacto na trama, com poder raro mesmo entre os personagens fortes.",
+    "Guarda segredos ou poderes ocultos que só se revelam em momentos decisivos da história.",
+    "Elevado a um patamar quase sobre-humano, comparável às maiores potências do anime.",
+    "Seu poder distorce a narrativa ao seu redor, brilhando em qualquer batalha em que aparece.",
+    "Está entre os personagens mais fortes conhecidos dentro de todo o universo da obra.",
+    "Um veterano de poder imenso, cuja experiência e força moldaram a história do anime.",
+    "Representa uma força fundamental do universo da obra, quase incontrolável.",
+    "Poder de escala destrutiva, capaz de alterar o rumo de batalhas inteiras sozinho.",
+    "Transcende os limites normais dos personagens do anime, operando em outro nível de poder.",
+    "Uma presença quase celestial dentro da história, reverenciada ou temida por todos.",
+    "Um dos maiores antagonistas ou forças de destruição já vistas na obra.",
+    "Alcançou uma forma ou estado ligado ao ciclo lunar da trama, de poder imprevisível.",
+    "Alcançou uma forma ou estado ligado ao ciclo solar da trama, de poder radiante.",
+    "Sua força é capaz de mutilar realidades ou destruir oponentes considerados invencíveis.",
+    "Uma figura fundadora da história do anime, na origem de tudo que viria depois.",
+    "O primeiro de sua espécie, técnica ou linhagem — um marco histórico da obra.",
+    "Atingiu um estado quase divino, muito além do que qualquer humano comum poderia alcançar.",
+    "Sua existência desafia as leis da matéria dentro do universo da obra.",
+    "Carta especial: domina o gelo absoluto, um poder raro reservado a poucas personagens de cada anime.",
+    "O ápice do poder dentro da obra — uma divindade reconhecida dentro da própria história.",
+    "Raridade única do jogo: uma reviravolta lendária de traição entre forças angelicais, reservada a um único personagem em todo o gacha."
+];
+
+// Pequenas descrições de ambientação, geradas a partir do nome/anime da carta
+// e combinadas com o motivo da raridade acima.
+function getCardDescription(card) {
+    const templates = [
+        `Um personagem de ${card.anime}, retratado aqui em uma de suas formas mais marcantes: ${card.name}.`,
+        `${card.name} é uma carta colecionável inspirada em ${card.anime}, capturando um momento de destaque de sua jornada.`,
+        `Vindo do universo de ${card.anime}, ${card.name} representa um instante de força ou importância dentro da trama.`,
+        `Esta carta traz ${card.name}, figura ligada a ${card.anime}, em uma pose que remete ao seu papel na história.`
+    ];
+    const idx = card.id % templates.length;
+    return templates[idx];
+}
+
+let game = { gems: 10000, collection: [], collectionMap: new Map(), allCards: [], gemUpgradeLevel: 0, luckLevel: 0, totalRarityCounts: [], ownedRarityCounts: [] };
+let currentAnimeIdx = 0;
+
+const MAX_UPGRADE_LEVEL = 20;
+const GEM_GAIN_PER_LEVEL = 10;   // +10 gemas por farm a cada nível
+const LUCK_PER_LEVEL = 0.05;     // +0.05x de sorte por nível, 20 níveis = +1.00x (máximo 2x)
+
+function gemUpgradeCost(level) { return 200 + level * 150; }
+function luckUpgradeCost(level) { return 250 + level * 200; }
+function farmAmount() { return 50 + game.gemUpgradeLevel * GEM_GAIN_PER_LEVEL; }
+function luckMultiplier() { return 1 + game.luckLevel * LUCK_PER_LEVEL; }
+
+function buyGemUpgrade() {
+    if (game.gemUpgradeLevel >= MAX_UPGRADE_LEVEL) return;
+    const cost = gemUpgradeCost(game.gemUpgradeLevel);
+    if (game.gems < cost) return alert("Gemas insuficientes!");
+    game.gems -= cost;
+    game.gemUpgradeLevel++;
+    updateHUD(); renderShop();
+}
+
+function buyLuckUpgrade() {
+    if (game.luckLevel >= MAX_UPGRADE_LEVEL) return;
+    const cost = luckUpgradeCost(game.luckLevel);
+    if (game.gems < cost) return alert("Gemas insuficientes!");
+    game.gems -= cost;
+    game.luckLevel++;
+    updateHUD(); renderShop();
+}
+
+function openShop() { renderShop(); switchScreen('shop-screen'); }
+
+// Valor de venda por carta repetida: escala com o poder, com teto de 5000 gemas
+// para não quebrar a economia com cartas de raridade altíssima.
+function cardSellValue(card) {
+    return Math.min(5000, Math.max(5, Math.round(card.power / 200)));
+}
+
+function getDuplicateSummary() {
+    let count = 0, value = 0;
+    game.collection.forEach(entry => {
+        if (entry.count > 1) {
+            const dupes = entry.count - 1;
+            count += dupes;
+            value += dupes * cardSellValue(entry);
+        }
+    });
+    return { count, value };
+}
+
+function sellDuplicates() {
+    let totalGems = 0;
+    let totalSold = 0;
+    game.collection.forEach(entry => {
+        if (entry.count > 1) {
+            const dupes = entry.count - 1;
+            totalGems += dupes * cardSellValue(entry);
+            totalSold += dupes;
+            entry.count = 1;
+        }
+    });
+    if (totalSold === 0) return alert("Nenhuma carta repetida para vender!");
+    game.gems += totalGems;
+    updateHUD();
+    renderShop();
+    alert(`Vendidas ${totalSold} cartas repetidas por ${totalGems.toLocaleString()} gemas!`);
+}
+
+function renderShop() {
+    document.getElementById('gem-upgrade-level').innerText = game.gemUpgradeLevel;
+    document.getElementById('gem-upgrade-current').innerText = farmAmount();
+    const gemMaxed = game.gemUpgradeLevel >= MAX_UPGRADE_LEVEL;
+    document.getElementById('gem-upgrade-cost').innerText = gemMaxed ? "-" : gemUpgradeCost(game.gemUpgradeLevel);
+    const gemBtn = document.getElementById('btn-gem-upgrade');
+    gemBtn.disabled = gemMaxed;
+    gemBtn.innerText = gemMaxed ? "Nível Máximo" : "Melhorar Ganho de Gemas";
+
+    document.getElementById('luck-upgrade-level').innerText = game.luckLevel;
+    document.getElementById('luck-upgrade-current').innerText = luckMultiplier().toFixed(2);
+    const luckMaxed = game.luckLevel >= MAX_UPGRADE_LEVEL;
+    document.getElementById('luck-upgrade-cost').innerText = luckMaxed ? "-" : luckUpgradeCost(game.luckLevel);
+    const luckBtn = document.getElementById('btn-luck-upgrade');
+    luckBtn.disabled = luckMaxed;
+    luckBtn.innerText = luckMaxed ? "Nível Máximo" : "Melhorar Sorte";
+
+    const dupes = getDuplicateSummary();
+    document.getElementById('dupe-count').innerText = dupes.count.toLocaleString();
+    document.getElementById('dupe-value').innerText = dupes.value.toLocaleString();
+    document.getElementById('btn-sell-dupes').disabled = dupes.count === 0;
+}
+
+// Detecção automática: qualquer personagem cujo nome contenha palavras
+// ligadas a poderes de gelo vira automaticamente "Imperatriz de Gelo" (raridade 24),
+// desde que o anime dela ainda não tenha uma Imperatriz de Gelo definida manualmente.
+const ICE_KEYWORDS_REGEX = /gelo|ice|frost|frozen|snow|glacial|frio absoluto/i;
+
+function isAutoIceCharacter(anime, name) {
+    if (iceEmpresses[anime]) return false; // já definida manualmente para esse anime
+    return ICE_KEYWORDS_REGEX.test(name);
+}
+
+function initDatabase() {
+    let id = 1;
+    game.allCards = [];
+    // índices 1..26 usados; posição 0 fica vazia para ler direto por rarity
+    game.totalRarityCounts = new Array(27).fill(0);
+    game.ownedRarityCounts = new Array(27).fill(0);
+
+    animeList.forEach(anime => {
+        const names = specificCharacters[anime] || Array.from({length: 24}, (_, i) => `Carta #${i+1}`);
+        for (let i = 0; i < 24; i++) {
+            let r = 0;
+            let name = names[i];
+
+            // REGRA MÁXIMA: GOKU KAKUMEI SEMPRE NÍVEL 26
+            if (name === "Goku Kakumei") {
+                r = 26;
+            }
+            else if (iceEmpresses[anime] && name === iceEmpresses[anime]) {
+                r = 24;
+            }
+            else if (isAutoIceCharacter(anime, name)) {
+                r = 24; // Detecção automática de poder de gelo
+            }
+            else if (i === 0) r = 1;
+            else if (i === 23) r = 25; // As outras últimas cartas são Nível 25
+            else r = i + 1; // Mapeia 1:1 as posições 1..22 para as raridades 2..23
+
+            // PODER
+            let power = (r === 26) ? 999999999 : (r === 25 ? 1000000 : (r === 24 ? 500000 : r * 10000));
+            game.allCards.push({ id: id++, anime: anime, name: name, rarity: r, power: power });
+            game.totalRarityCounts[r]++;
+        }
+    });
+    updateRarityFilterLabels();
+}
+
+function updateRarityFilterLabels() {
+    const select = document.getElementById('rarity-filter');
+    if(!select) return;
+    const saved = select.value || "all";
+    const options = ['<option value="all">📁 Ver por Anime (Padrão)</option>'];
+
+    rarityNames.forEach((name, idx) => {
+        const level = idx + 1;
+        const total = game.totalRarityCounts[level] || 0;
+        const owned = game.ownedRarityCounts[level] || 0;
+
+        if (total > 0) {
+            options.push(`<option value="${level}">${name.toUpperCase()} (${owned}/${total})</option>`);
+        }
+    });
+    select.innerHTML = options.join("");
+    select.value = saved;
+}
+
+function renderCard(c, count, locked) {
+    if (locked) return `<div class="card locked"><div class="card-index">#${c.id}</div><div class="card-center">🔒</div><div class="card-name">???</div><div class="card-anime">${c.anime}</div></div>`;
+    let icon = c.rarity === 24 ? "❄️" : (c.rarity === 25 ? "👑" : (c.rarity === 26 ? "😇" : "✨"));
+    return `<div class="card r${c.rarity} clickable" onclick="openCardModal(${c.id})">${count > 1 ? `<div class="card-count">x${count}</div>` : ''}<div class="card-index">#${c.id}</div><div class="card-top">⚡ ${c.power.toLocaleString()}</div><div class="card-center">${icon}</div><div class="card-name">${c.name}</div><div class="card-anime">${c.anime}</div><div class="card-rarity">${rarityNames[c.rarity-1]}</div></div>`;
+}
+
+function openCardModal(cardId) {
+    const c = game.allCards.find(card => card.id === cardId);
+    if (!c) return;
+    let icon = c.rarity === 24 ? "❄️" : (c.rarity === 25 ? "👑" : (c.rarity === 26 ? "😇" : "✨"));
+
+    const visual = document.getElementById('modal-card-visual');
+    if (visual._resetTilt) { visual._resetTilt(); } else { visual.style.transform = 'rotateX(0deg) rotateY(0deg)'; }
+    const front = document.getElementById('modal-card-front');
+    front.className = `card-face card-face-front r${c.rarity}`;
+    front.innerHTML = `<div class="card-center">${icon}</div><div class="card-name">${c.name}</div><div class="card-anime">${c.anime}</div>`;
+
+    document.getElementById('modal-rarity-tag').innerText = `${rarityNames[c.rarity-1]} · Nível ${c.rarity}`;
+    document.getElementById('modal-power').innerText = `⚡ Poder: ${c.power.toLocaleString()}`;
+    document.getElementById('modal-description').innerText = getCardDescription(c);
+    document.getElementById('modal-reason').innerText = rarityReasons[c.rarity - 1];
+
+    document.getElementById('card-modal').classList.add('active');
+}
+
+function closeCardModal() {
+    document.getElementById('card-modal').classList.remove('active');
+}
+
+// ===== ROTAÇÃO 3D DA CARTA AMPLIADA (arrastar com o dedo/mouse) =====
+function setupCardTilt() {
+    const el = document.getElementById('modal-card-visual');
+    if (!el) return;
+    let dragging = false;
+    let startX = 0, startY = 0;
+    let curRotX = 0, curRotY = 0;
+    let baseRotX = 0, baseRotY = 0;
+
+    function applyTransform(rotX, rotY) {
+        el.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        updateShine(rotX, rotY);
+    }
+
+    // Normaliza um ângulo para o intervalo -180..180, usado só para
+    // posicionar o brilho reativo (a rotação real da carta não tem limite).
+    function normDeg(d) {
+        let m = d % 360;
+        if (m > 180) m -= 360;
+        if (m < -180) m += 360;
+        return m;
+    }
+
+    // Move o ponto de brilho (highlight) sobre a carta acompanhando o
+    // ângulo de rotação, simulando luz refletindo na superfície holográfica.
+    function updateShine(rotX, rotY) {
+        const ny = normDeg(rotY);
+        const nx = normDeg(rotX);
+        const shineX = Math.max(0, Math.min(100, 50 + (ny / 90) * 50));
+        const shineY = Math.max(0, Math.min(100, 32 - (nx / 90) * 50));
+        el.style.setProperty('--shine-x', shineX + '%');
+        el.style.setProperty('--shine-y', shineY + '%');
+    }
+
+    function startDrag(e) {
+        dragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        el.classList.add('dragging');
+        if (el.setPointerCapture && e.pointerId !== undefined) {
+            try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        }
+    }
+
+    function moveDrag(e) {
+        if (!dragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        // Sem limite de ângulo: gira livremente 360° em qualquer direção,
+        // tanto para cima/baixo (rotateX) quanto para os lados (rotateY),
+        // inclusive revelando o verso da carta.
+        const rotY = baseRotY + dx * 0.5;
+        const rotX = baseRotX + (-dy * 0.5);
+        curRotX = rotX; curRotY = rotY;
+        applyTransform(rotX, rotY);
+    }
+
+    function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        el.classList.remove('dragging');
+        // guarda o ângulo atual como base para o próximo arraste,
+        // em vez de resetar — assim a carta fica onde o usuário a deixou
+        baseRotX = curRotX;
+        baseRotY = curRotY;
+    }
+
+    el.addEventListener('pointerdown', startDrag);
+    el.addEventListener('pointermove', moveDrag);
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointerleave', endDrag);
+    el.addEventListener('pointercancel', endDrag);
+
+    // Exposto para resetar a carta (frente virada para o jogador) sempre
+    // que um novo card-modal é aberto.
+    el._resetTilt = function () {
+        curRotX = 0; curRotY = 0; baseRotX = 0; baseRotY = 0;
+        applyTransform(0, 0);
+    };
+}
+
+function renderBookPage() {
+    const val = document.getElementById('rarity-filter').value;
+    const content = document.getElementById('book-content');
+    const nav = document.getElementById('book-nav-box');
+    let cards = [];
+    if (val === "all") {
+        nav.style.display = "flex";
+        let anime = animeList[currentAnimeIdx];
+        cards = game.allCards.filter(c => c.anime === anime);
+        document.getElementById('book-title').innerText = anime;
+        let owned = cards.filter(c => game.collectionMap.has(c.id)).length;
+        document.getElementById('book-progress').innerText = `${owned}/24`;
+    } else {
+        nav.style.display = "none";
+        cards = game.allCards.filter(c => c.rarity == val);
+        document.getElementById('book-title').innerText = `RARIDADE: ${rarityNames[val-1].toUpperCase()}`;
+    }
+    const html = cards.map(c => renderCard(c, 0, !game.collectionMap.has(c.id))).join("");
+    content.innerHTML = html;
+}
+
+// ===== REVELAÇÃO 3D EM TELA CHEIA PARA CARTAS RARIDADE 15+ =====
+const FULLSCREEN_REVEAL_MIN_RARITY = 15;
+let revealQueue = [];
+
+function summonIconFor(rarity) {
+    return rarity === 24 ? "❄️" : (rarity === 25 ? "👑" : (rarity === 26 ? "😇" : "✨"));
+}
+
+function generateRevealSparkles(rarity) {
+    const container = document.getElementById('reveal-sparkles');
+    const count = Math.min(36, 14 + rarity); // quanto maior a raridade, mais brilhos
+    let html = "";
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 90 + Math.random() * 90;
+        const sx = Math.cos(angle) * radius;
+        const sy = Math.sin(angle) * radius;
+        const delay = (Math.random() * 1.6).toFixed(2);
+        const size = (3 + Math.random() * 4).toFixed(1);
+        html += `<div class="sparkle" style="width:${size}px; height:${size}px; --sx:${sx.toFixed(1)}px; --sy:${sy.toFixed(1)}px; animation-delay:${delay}s;"></div>`;
+    }
+    container.innerHTML = html;
+}
+
+function showRevealCard(card) {
+    const el = document.getElementById('reveal-card-3d');
+    el.className = `reveal-card-3d r${card.rarity}`;
+    const icon = summonIconFor(card.rarity);
+    el.innerHTML = `<div class="card-index">#${card.id}</div><div class="card-center">${icon}</div><div class="card-name">${card.name}</div><div class="card-anime">${card.anime}</div>`;
+
+    document.getElementById('reveal-rarity-label').innerText = `${rarityNames[card.rarity - 1]} · Nível ${card.rarity}`;
+    document.getElementById('reveal-counter').innerText = revealQueue.length > 1 ? `1/${revealQueue.length} restantes` : '';
+    generateRevealSparkles(card.rarity);
+}
+
+function startRevealSequence() {
+    if (revealQueue.length === 0) return;
+    showRevealCard(revealQueue[0]);
+    document.getElementById('reveal-overlay').classList.add('active');
+}
+
+function advanceReveal() {
+    revealQueue.shift();
+    if (revealQueue.length > 0) {
+        showRevealCard(revealQueue[0]);
+    } else {
+        document.getElementById('reveal-overlay').classList.remove('active');
+    }
+}
+
+// --- SISTEMA DE PESOS DE INVOCAÇÃO ---
+const BASE_RARITY_DECAY = 4;
+const MIN_RARITY_DECAY = 1;
+
+function currentRarityDecay() {
+    const luckFraction = Math.min(1, Math.max(0, (luckMultiplier() - 1) / 1));
+    return BASE_RARITY_DECAY - (BASE_RARITY_DECAY - MIN_RARITY_DECAY) * luckFraction;
+}
+
+function rarityWeight(rarity) {
+    const decay = currentRarityDecay();
+    return 0.5 * Math.pow(1 / decay, rarity - 1);
+}
+
+function drawWeightedCard(cumulativeWeights, totalWeight) {
+    const r = Math.random() * totalWeight;
+    let lo = 0, hi = cumulativeWeights.length - 1;
+    while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (cumulativeWeights[mid] < r) lo = mid + 1; else hi = mid;
+    }
+    return game.allCards[lo];
+}
+
+function summon(amt) {
+    if (game.gems < amt * 100) return alert("Sem gemas!");
+    game.gems -= amt * 100;
+    const res = document.getElementById('summon-result');
+
+    const cumulativeWeights = new Array(game.allCards.length);
+    let acc = 0;
+    for (let i = 0; i < game.allCards.length; i++) {
+        acc += rarityWeight(game.allCards[i].rarity);
+        cumulativeWeights[i] = acc;
+    }
+    const totalWeight = acc;
+
+    const pieces = new Array(amt);
+    const rareHits = [];
+    for (let i = 0; i < amt; i++) {
+        let char = drawWeightedCard(cumulativeWeights, totalWeight);
+        let f = game.collectionMap.get(char.id);
+        if (f) {
+            f.count++;
+        } else {
+            const entry = {...char, count: 1};
+            game.collection.push(entry);
+            game.collectionMap.set(char.id, entry);
+            game.ownedRarityCounts[char.rarity]++;
+        }
+        pieces[i] = renderCard(char, 0, false);
+        if (char.rarity >= FULLSCREEN_REVEAL_MIN_RARITY) rareHits.push(char);
+    }
+    res.innerHTML = pieces.join("");
+    updateHUD(); updateRarityFilterLabels();
+
+    if (rareHits.length > 0) {
+        revealQueue = rareHits;
+        startRevealSequence();
+    }
+}
+
+function openIndexBook() { updateRarityFilterLabels(); renderBookPage(); switchScreen('index-screen'); }
+function changeBookPage(d) { currentAnimeIdx = (currentAnimeIdx + d + animeList.length) % animeList.length; renderBookPage(); }
+function switchScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(id==='collection-screen') renderCollection();
+}
+function updateHUD() {
+    document.getElementById('gems').innerText = game.gems.toLocaleString();
+    document.getElementById('luck-display').innerText = "x" + luckMultiplier().toFixed(2);
+    document.getElementById('farm-amount-label').innerText = "+" + farmAmount();
+}
+function farmGems() { game.gems += farmAmount(); updateHUD(); }
+function renderCollection() {
+    const list = document.getElementById('collection-list');
+    const sorted = [...game.collection].sort((a,b) => b.rarity - a.rarity);
+    list.innerHTML = sorted.map(c => renderCard(c, c.count, false)).join("");
+}
+
+initDatabase();
+updateHUD();
+setupCardTilt();
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getAuth,
+            GoogleAuthProvider,
+            signInWithPopup,
+            signInAnonymously,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbNEz0cEMi9sfmTtTrgUi-WJJghNiy32E",
+            authDomain: "anime-gacha-master.firebaseapp.com",
+            projectId: "anime-gacha-master",
+            storageBucket: "anime-gacha-master.firebasestorage.app",
+            messagingSenderId: "435922058347",
+            appId: "1:435922058347:web:0488f4ec3272186df3052e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const loginScreen = document.getElementById("login-screen");
+        const errorBox = document.getElementById("login-error");
+        const loadingBox = document.getElementById("login-loading");
+        const btnGoogle = document.getElementById("btn-google-login");
+        const btnGuest = document.getElementById("btn-guest-login");
+
+        document.body.classList.add("game-locked");
+
+        function setLoading(state) {
+            loadingBox.style.display = state ? "block" : "none";
+            btnGoogle.disabled = state;
+            btnGuest.disabled = state;
+        }
+
+        function showError(err) {
+            console.error(err);
+            errorBox.innerText = "Erro ao entrar: " + (err.code || err.message || err);
+        }
+
+        btnGoogle.addEventListener("click", async () => {
+            errorBox.innerText = "";
+            setLoading(true);
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (err) {
+                showError(err);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        btnGuest.addEventListener("click", async () => {
+            errorBox.innerText = "";
+            setLoading(true);
+            try {
+                await signInAnonymously(auth);
+            } catch (err) {
+                showError(err);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.body.classList.remove("game-locked");
+                loginScreen.style.display = "none";
+                console.log("Logado como:", user.isAnonymous ? "Visitante" : user.displayName);
+            } else {
+                document.body.classList.add("game-locked");
+                loginScreen.style.display = "flex";
+            }
+        });
+    </script>
+</body>
+</html>
