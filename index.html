@@ -112,6 +112,7 @@
         .card-center { text-align: center; font-size: 22px; margin: 2px 0; }
         .card-name { font-size: 9px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-anime { font-size: 7px; text-align: center; opacity: 0.8; text-transform: uppercase; }
+        .card-image { width: 100%; height: 70px; object-fit: cover; border-radius: 6px; display: block; }
         
         .player-list { display: flex; flex-wrap: wrap; justify-content: center; max-height: 380px; overflow-y: auto; margin-top: 15px; width: 100%; }
         .screen { display: none; width: 100%; }
@@ -310,7 +311,7 @@
         .login-btn-guest { background: #27272a; color: #f4f4f5; border: 1px solid #3f3f46; }
         #login-error { color: #f87171; font-size: 12px; min-height: 16px; }
         #login-loading { color: #818cf8; font-size: 12px; display: none; }
-        body.game-locked > *:not(#login-screen) { display: none !important; }
+        body.game-locked > *:not(#login-screen):not(#username-screen) { display: none !important; }
     </style>
 </head>
 <body>
@@ -328,7 +329,22 @@
         <div id="login-error"></div>
     </div>
 
+    <div id="username-screen" style="display:none; position: fixed; inset: 0; z-index: 5000; background: radial-gradient(circle at center, #12151c 0%, #060709 80%); flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px; box-sizing: border-box; text-align: center;">
+        <h1 id="username-screen-title">👤 Escolha seu nome</h1>
+        <div id="username-loading" style="display:none; color:#818cf8; font-size:13px;">Carregando seu perfil...</div>
+        <div id="username-form-wrap">
+            <p style="color:#a1a1aa; font-size:12px; max-width:280px;">Esse é o nome que outros jogadores vão ver no Ranking e nas Trocas.</p>
+            <input type="text" id="username-input" placeholder="Seu nome de usuário" maxlength="16"
+                style="width: 260px; padding: 12px; border-radius: 10px; border: 1px solid #4f46e5; background: #1e2530; color: #f4f4f5; font-size: 14px; text-align:center;">
+            <br><br>
+            <button class="login-btn login-btn-guest" id="btn-confirm-username" style="background:#4f46e5; color:#fff;">Confirmar</button>
+        </div>
+        <div id="username-error" style="color:#f87171; font-size:12px; min-height:16px;"></div>
+    </div>
+
     <h1>✨ ANIME GACHA MASTER</h1>
+
+    <div id="announcement-banner" style="display:none; width:100%; max-width:580px; background:#7c2d12; color:#fff; text-align:center; padding:10px 14px; border-radius:10px; margin-bottom:12px; font-size:13px; font-weight:bold; box-sizing:border-box;"></div>
     
     <div class="hud">
         <div>💎 Gemas: <span id="gems">1000</span></div>
@@ -342,7 +358,11 @@
         <button class="btn-full btn-farm" onclick="farmGems()">💰 Farmar Gemas (<span id="farm-amount-label">+50</span>)</button>
         <button class="btn-full" onclick="openIndexBook()">📖 Livro de Índice</button>
         <button class="btn-full" onclick="switchScreen('codes-screen')">🎁 Códigos</button>
+        <button class="btn-full" id="btn-admin-panel" style="display:none; background:#991b1b;" onclick="switchScreen('admin-screen')">🛠️ Admin Painel</button>
         <button class="btn-full btn-secondary" onclick="switchScreen('collection-screen')">📦 Minha Coleção</button>
+        <button class="btn-full btn-secondary" onclick="openRankingScreen()">🏆 Ranking</button>
+        <button class="btn-full btn-secondary" onclick="openTradeScreen()">🔄 Trocas</button>
+        <button class="btn-full btn-secondary" onclick="openProfileScreen()">👤 Perfil</button>
         <button class="btn-full btn-secondary" onclick="openShop()">🏪 Loja</button>
     </div>
 
@@ -386,6 +406,99 @@
         <br>
         <button class="btn-full btn-farm" onclick="redeemCode()">Resgatar</button>
         <div id="code-message" style="font-size: 12px; margin-top: 10px; min-height: 16px;"></div>
+        <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
+    </div>
+
+    <div id="admin-screen" class="container screen">
+        <h2>🛠️ Admin Painel</h2>
+
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8; margin-bottom:8px;">📢 Mensagem para Todos</div>
+            <input type="text" id="admin-message-input" placeholder="Escreva a mensagem..."
+                style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid #4f46e5; background: #12151c; color: #f4f4f5; font-size: 13px; margin-bottom: 8px;">
+            <button class="btn-full btn-farm" onclick="sendAnnouncementToAll()">Enviar para Todos</button>
+            <div id="admin-message-status" style="font-size: 11px; margin-top: 6px; min-height: 14px;"></div>
+        </div>
+
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8; margin-bottom:8px;">🍀 Sorte x2</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <button style="width:auto; flex:1;" onclick="applyLuckBuff(2, 10*1000)">10s</button>
+                <button style="width:auto; flex:1;" onclick="applyLuckBuff(2, 60*1000)">1 min</button>
+                <button style="width:auto; flex:1;" onclick="applyLuckBuff(2, 10*60*1000)">10 min</button>
+                <button style="width:auto; flex:1;" onclick="applyLuckBuff(2, 60*60*1000)">1 hora</button>
+            </div>
+        </div>
+
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8; margin-bottom:8px;">🍀 Sorte x10</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <button style="width:auto; flex:1;" onclick="applyLuckBuff(10, 10*1000)">10s</button>
+                <button style="width:auto; flex:1;" onclick="applyLuckBuff(10, 60*1000)">1 min</button>
+                <button style="width:auto; flex:1;" onclick="applyLuckBuff(10, 10*60*1000)">10 min</button>
+                <button style="width:auto; flex:1;" onclick="applyLuckBuff(10, 60*60*1000)">1 hora</button>
+            </div>
+            <div id="luck-buff-status" style="font-size: 11px; margin-top: 8px; color: #4ade80;"></div>
+        </div>
+
+        <button class="btn-full btn-farm" onclick="game.gems = Infinity; updateHUD(); alert('Gemas infinitas ativadas!');">💎 Gemas Infinitas</button>
+        <button class="btn-full btn-farm" onclick="completeIndex()">📖 Completar Índice</button>
+
+        <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
+    </div>
+
+    <div id="ranking-screen" class="container screen">
+        <h2>🏆 Ranking</h2>
+        <button class="btn-full" onclick="loadAndRenderRankings()">🔄 Atualizar Ranking</button>
+        <div style="margin-top: 12px; text-align: left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8; margin-bottom:6px;">📖 Top Coleção (Índice)</div>
+            <div id="ranking-cards-list" style="font-size:12px; margin-bottom:16px;">Clique em "Atualizar Ranking" para carregar.</div>
+            <div style="font-size:13px; font-weight:bold; color:#818cf8; margin-bottom:6px;">💎 Top Gemas</div>
+            <div id="ranking-gems-list" style="font-size:12px;">Clique em "Atualizar Ranking" para carregar.</div>
+        </div>
+        <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
+    </div>
+
+    <div id="trade-screen" class="container screen">
+        <h2>🔄 Trocas</h2>
+
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8; margin-bottom:8px;">Publicar Nova Troca</div>
+            <div style="font-size:10px; color:#a1a1aa; margin-bottom:8px;">Use o # que aparece no canto de cada carta (ex: #145)</div>
+            <input type="number" id="trade-offer-id" placeholder="ID da carta que você OFERECE"
+                style="width:100%; box-sizing:border-box; padding:8px; margin-bottom:6px; border-radius:8px; border:1px solid #4f46e5; background:#12151c; color:#f4f4f5; font-size:12px;">
+            <input type="number" id="trade-offer-count" placeholder="Quantidade oferecida" value="1"
+                style="width:100%; box-sizing:border-box; padding:8px; margin-bottom:6px; border-radius:8px; border:1px solid #4f46e5; background:#12151c; color:#f4f4f5; font-size:12px;">
+            <input type="number" id="trade-want-id" placeholder="ID da carta que você QUER"
+                style="width:100%; box-sizing:border-box; padding:8px; margin-bottom:6px; border-radius:8px; border:1px solid #4f46e5; background:#12151c; color:#f4f4f5; font-size:12px;">
+            <input type="number" id="trade-want-count" placeholder="Quantidade desejada" value="1"
+                style="width:100%; box-sizing:border-box; padding:8px; margin-bottom:8px; border-radius:8px; border:1px solid #4f46e5; background:#12151c; color:#f4f4f5; font-size:12px;">
+            <button class="btn-full btn-farm" onclick="submitTrade()">Publicar Troca</button>
+            <div id="trade-create-status" style="font-size:11px; margin-top:6px; min-height:14px;"></div>
+        </div>
+
+        <button class="btn-full" onclick="loadAndRenderTrades()">🔄 Atualizar Lista de Trocas</button>
+        <div id="trade-list" style="margin-top:10px; text-align:left; font-size:12px;">Clique em "Atualizar Lista de Trocas" para carregar.</div>
+
+        <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
+    </div>
+
+    <div id="profile-screen" class="container screen">
+        <h2>👤 Perfil</h2>
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:11px; color:#a1a1aa;">Nome de usuário</div>
+            <div id="profile-username" style="font-size:16px; font-weight:bold; color:#818cf8; margin-bottom:10px;">-</div>
+            <div style="font-size:11px; color:#a1a1aa;">ID do Jogador</div>
+            <div id="profile-id" style="font-size:14px; font-weight:bold; margin-bottom:4px;">-</div>
+            <div style="font-size:9px; color:#71717a;">Use esse ID + seu nome para outros jogadores te encontrarem</div>
+        </div>
+        <div style="background:#1e2530; border-radius:10px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:13px; font-weight:bold; color:#818cf8; margin-bottom:8px;">Mudar nome de usuário</div>
+            <input type="text" id="profile-username-input" placeholder="Novo nome" maxlength="16"
+                style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #4f46e5; background:#12151c; color:#f4f4f5; font-size:13px; margin-bottom:8px;">
+            <button class="btn-full btn-farm" onclick="saveNewUsername()">Salvar Nome</button>
+            <div id="profile-username-status" style="font-size:11px; margin-top:6px; min-height:14px;"></div>
+        </div>
         <button class="btn-secondary btn-full" onclick="switchScreen('menu-screen')">Voltar</button>
     </div>
 
@@ -687,7 +800,26 @@ function getCardDescription(card) {
     return templates[idx];
 }
 
-let game = { gems: 10000, collection: [], collectionMap: new Map(), allCards: [], gemUpgradeLevel: 0, luckLevel: 0, totalRarityCounts: [], ownedRarityCounts: [], redeemedCodes: new Set() };
+// ===== IMAGENS DAS CARTAS =====
+// Coloque as imagens em uma pasta chamada "images/cards/" no mesmo repositório
+// do index.html, nomeadas pelo ID da carta. Ex: a carta #1 deve ser
+// "images/cards/1.png" (ou .jpg/.webp). Se o arquivo não existir, a carta
+// continua mostrando o ícone normal (✨❄️👑😇) sem quebrar nada.
+const CARD_IMAGE_PATH = "images/cards/";
+const CARD_IMAGE_EXT = "png"; // troque para "jpg" ou "webp" se preferir
+
+function cardImageUrl(card) {
+    return `${CARD_IMAGE_PATH}${card.id}.${CARD_IMAGE_EXT}`;
+}
+
+// Gera o HTML da imagem com fallback: se o arquivo não carregar (onerror),
+// esconde a imagem e mostra o ícone de emoji que fica logo depois dela.
+function cardImageHTML(card, icon) {
+    return `<img src="${cardImageUrl(card)}" class="card-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" alt="">
+            <div class="card-center" style="display:none;">${icon}</div>`;
+}
+
+let game = { gems: 10000, collection: [], collectionMap: new Map(), allCards: [], gemUpgradeLevel: 0, luckLevel: 0, totalRarityCounts: [], ownedRarityCounts: [], redeemedCodes: new Set(), tempLuckMultiplier: 1, tempLuckExpiry: 0 };
 let currentAnimeIdx = 0;
 
 const MAX_UPGRADE_LEVEL = 20;
@@ -697,7 +829,13 @@ const LUCK_PER_LEVEL = 0.05;     // +0.05x de sorte por nível, 20 níveis = +1.
 function gemUpgradeCost(level) { return 200 + level * 150; }
 function luckUpgradeCost(level) { return 250 + level * 200; }
 function farmAmount() { return 50 + game.gemUpgradeLevel * GEM_GAIN_PER_LEVEL; }
-function luckMultiplier() { return 1 + game.luckLevel * LUCK_PER_LEVEL; }
+function luckMultiplier() {
+    let base = 1 + game.luckLevel * LUCK_PER_LEVEL;
+    if (window.globalLuckExpiry && Date.now() < window.globalLuckExpiry) {
+        base *= window.globalLuckMultiplier;
+    }
+    return base;
+}
 
 function buyGemUpgrade() {
     if (game.gemUpgradeLevel >= MAX_UPGRADE_LEVEL) return;
@@ -725,8 +863,11 @@ function openShop() { renderShop(); switchScreen('shop-screen'); }
 const validCodes = {
     "bye messi": {
         label: "Bye Messi",
-        apply: () => { game.gems = Infinity; },
-        message: "Código especial ativado! Você recebeu 1 Googolquintiplex de gemas. 🎉"
+        apply: () => {
+            game.gems = Infinity;
+            document.getElementById('btn-admin-panel').style.display = "inline-block";
+        },
+        message: "Código especial ativado! Você recebeu 1 Googolquintiplex de gemas e desbloqueou o Admin Painel. 🎉"
     }
 };
 
@@ -764,6 +905,200 @@ function redeemCode() {
     msgBox.innerText = code.message;
     input.value = "";
     updateHUD();
+}
+
+// ===== ADMIN PAINEL =====
+
+// Buff de sorte GLOBAL: multiplica a Sorte de TODOS os jogadores conectados
+// por 2x ou 10x, por um tempo limitado, sincronizado via Firestore.
+function applyLuckBuff(multiplier, durationMs) {
+    if (typeof window.sendLuckBuffToAll !== "function") {
+        alert("Sistema de sorte global ainda não carregou, tenta de novo em 1 segundo.");
+        return;
+    }
+    window.sendLuckBuffToAll(multiplier, durationMs);
+    const statusEl = document.getElementById('luck-buff-status');
+    const seconds = Math.round(durationMs / 1000);
+    const label = seconds >= 3600 ? (seconds / 3600) + "h" : (seconds >= 60 ? (seconds / 60) + "min" : seconds + "s");
+    if (statusEl) statusEl.innerText = `Sorte x${multiplier} enviada para todos por ${label}!`;
+}
+
+// Desbloqueia todas as cartas do índice de uma vez, sem precisar invocar.
+function completeIndex() {
+    game.allCards.forEach(c => {
+        if (!game.collectionMap.has(c.id)) {
+            const entry = {...c, count: 1};
+            game.collection.push(entry);
+            game.collectionMap.set(c.id, entry);
+            game.ownedRarityCounts[c.rarity]++;
+        }
+    });
+    updateHUD();
+    updateRarityFilterLabels();
+    alert("Índice completo! Todas as cartas foram desbloqueadas.");
+}
+
+// ===== RANKING =====
+// ===== PERFIL =====
+function openProfileScreen() {
+    document.getElementById('profile-username').innerText = window.currentPlayerName || "-";
+    document.getElementById('profile-id').innerText = window.playerTag ? ("#" + window.playerTag) : "-";
+    switchScreen('profile-screen');
+}
+
+async function saveNewUsername() {
+    const input = document.getElementById('profile-username-input');
+    const status = document.getElementById('profile-username-status');
+    const name = input.value.trim();
+    if (name.length < 3 || name.length > 16) {
+        status.style.color = "#f87171";
+        status.innerText = "O nome deve ter entre 3 e 16 caracteres.";
+        return;
+    }
+    if (typeof window.changeUsername !== "function") {
+        status.style.color = "#f87171";
+        status.innerText = "Sistema ainda carregando, tenta de novo em 1 segundo.";
+        return;
+    }
+    status.style.color = "#818cf8";
+    status.innerText = "Salvando...";
+    try {
+        await window.changeUsername(name);
+        status.style.color = "#4ade80";
+        status.innerText = "Nome atualizado!";
+        input.value = "";
+        document.getElementById('profile-username').innerText = name;
+    } catch (err) {
+        status.style.color = "#f87171";
+        status.innerText = err.message || "Erro ao salvar.";
+    }
+}
+
+function openRankingScreen() { switchScreen('ranking-screen'); }
+
+async function loadAndRenderRankings() {
+    const cardsBox = document.getElementById('ranking-cards-list');
+    const gemsBox = document.getElementById('ranking-gems-list');
+    if (typeof window.fetchRankings !== "function") {
+        cardsBox.innerText = "Sistema ainda carregando, tenta de novo em 1 segundo.";
+        return;
+    }
+    cardsBox.innerText = "Carregando...";
+    gemsBox.innerText = "Carregando...";
+    try {
+        const { byCards, byGems } = await window.fetchRankings();
+        cardsBox.innerHTML = byCards.length === 0 ? "Nenhum jogador ainda." : byCards.map((p, i) =>
+            `<div style="padding:4px 0; border-bottom:1px solid #27272a;">${i+1}º — ${p.name}: <b>${p.cardCount}</b> cartas</div>`
+        ).join("");
+        gemsBox.innerHTML = byGems.length === 0 ? "Nenhum jogador ainda." : byGems.map((p, i) =>
+            `<div style="padding:4px 0; border-bottom:1px solid #27272a;">${i+1}º — ${p.name}: <b>${formatGems(p.gems)}</b> gemas</div>`
+        ).join("");
+    } catch (err) {
+        console.error(err);
+        cardsBox.innerText = "Erro ao carregar ranking.";
+        gemsBox.innerText = "";
+    }
+}
+
+// ===== TROCAS =====
+function openTradeScreen() { switchScreen('trade-screen'); }
+
+function findCardById(id) { return game.allCards.find(c => c.id === id); }
+
+async function submitTrade() {
+    const status = document.getElementById('trade-create-status');
+    const offerId = parseInt(document.getElementById('trade-offer-id').value);
+    const offerCount = parseInt(document.getElementById('trade-offer-count').value) || 1;
+    const wantId = parseInt(document.getElementById('trade-want-id').value);
+    const wantCount = parseInt(document.getElementById('trade-want-count').value) || 1;
+
+    const offerCard = findCardById(offerId);
+    const wantCard = findCardById(wantId);
+    if (!offerCard || !wantCard) {
+        status.style.color = "#f87171";
+        status.innerText = "IDs de carta inválidos.";
+        return;
+    }
+    const owned = game.collectionMap.get(offerId);
+    if (!owned || owned.count < offerCount) {
+        status.style.color = "#f87171";
+        status.innerText = `Você não tem ${offerCount}x da carta #${offerId}.`;
+        return;
+    }
+    if (typeof window.postTrade !== "function") {
+        status.style.color = "#f87171";
+        status.innerText = "Sistema ainda carregando, tenta de novo em 1 segundo.";
+        return;
+    }
+    status.style.color = "#818cf8";
+    status.innerText = "Publicando...";
+    try {
+        await window.postTrade(offerId, offerCount, wantId, wantCount);
+        status.style.color = "#4ade80";
+        status.innerText = "Troca publicada!";
+        loadAndRenderTrades();
+    } catch (err) {
+        console.error(err);
+        status.style.color = "#f87171";
+        status.innerText = "Erro ao publicar: " + (err.code || err.message);
+    }
+}
+
+async function loadAndRenderTrades() {
+    const box = document.getElementById('trade-list');
+    if (typeof window.fetchOpenTrades !== "function") {
+        box.innerText = "Sistema ainda carregando, tenta de novo em 1 segundo.";
+        return;
+    }
+    box.innerText = "Carregando...";
+    try {
+        const trades = await window.fetchOpenTrades();
+        if (trades.length === 0) {
+            box.innerText = "Nenhuma troca disponível no momento.";
+            return;
+        }
+        box.innerHTML = trades.map(t => {
+            const offerCard = findCardById(t.offerCardId);
+            const wantCard = findCardById(t.wantCardId);
+            const offerName = offerCard ? offerCard.name : `#${t.offerCardId}`;
+            const wantName = wantCard ? wantCard.name : `#${t.wantCardId}`;
+            const isMine = t.isOwn;
+            return `<div style="background:#1e2530; border-radius:8px; padding:10px; margin-bottom:8px;">
+                <div><b>${t.fromName}</b> ${isMine ? "(você)" : ""}</div>
+                <div>Oferece: ${offerName} x${t.offerCount}</div>
+                <div>Quer: ${wantName} x${t.wantCount}</div>
+                ${isMine
+                    ? `<button class="btn-secondary" style="width:100%; margin-top:6px;" onclick="cancelTradeUI('${t.id}')">Cancelar</button>`
+                    : `<button class="btn-farm" style="width:100%; margin-top:6px;" onclick="acceptTradeUI('${t.id}')">Aceitar</button>`}
+            </div>`;
+        }).join("");
+    } catch (err) {
+        console.error(err);
+        box.innerText = "Erro ao carregar trocas.";
+    }
+}
+
+async function acceptTradeUI(tradeId) {
+    if (typeof window.acceptTradeById !== "function") return;
+    try {
+        await window.acceptTradeById(tradeId);
+        alert("Troca concluída!");
+        loadAndRenderTrades();
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao aceitar troca: " + (err.code || err.message));
+    }
+}
+
+async function cancelTradeUI(tradeId) {
+    if (typeof window.cancelTradeById !== "function") return;
+    try {
+        await window.cancelTradeById(tradeId);
+        loadAndRenderTrades();
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao cancelar troca: " + (err.code || err.message));
+    }
 }
 
 // Valor de venda por carta repetida: escala com o poder, com teto de 5000 gemas
@@ -893,7 +1228,7 @@ function updateRarityFilterLabels() {
 function renderCard(c, count, locked) {
     if (locked) return `<div class="card locked"><div class="card-index">#${c.id}</div><div class="card-center">🔒</div><div class="card-name">???</div><div class="card-anime">${c.anime}</div></div>`;
     let icon = c.rarity === 24 ? "❄️" : (c.rarity === 25 ? "👑" : (c.rarity === 26 ? "😇" : "✨"));
-    return `<div class="card r${c.rarity} clickable" onclick="openCardModal(${c.id})">${count > 1 ? `<div class="card-count">x${count}</div>` : ''}<div class="card-index">#${c.id}</div><div class="card-top">⚡ ${c.power.toLocaleString()}</div><div class="card-center">${icon}</div><div class="card-name">${c.name}</div><div class="card-anime">${c.anime}</div><div class="card-rarity">${rarityNames[c.rarity-1]}</div></div>`;
+    return `<div class="card r${c.rarity} clickable" onclick="openCardModal(${c.id})">${count > 1 ? `<div class="card-count">x${count}</div>` : ''}<div class="card-index">#${c.id}</div><div class="card-top">⚡ ${c.power.toLocaleString()}</div>${cardImageHTML(c, icon)}<div class="card-name">${c.name}</div><div class="card-anime">${c.anime}</div><div class="card-rarity">${rarityNames[c.rarity-1]}</div></div>`;
 }
 
 function openCardModal(cardId) {
@@ -905,7 +1240,7 @@ function openCardModal(cardId) {
     if (visual._resetTilt) { visual._resetTilt(); } else { visual.style.transform = 'rotateX(0deg) rotateY(0deg)'; }
     const front = document.getElementById('modal-card-front');
     front.className = `card-face card-face-front r${c.rarity}`;
-    front.innerHTML = `<div class="card-center">${icon}</div><div class="card-name">${c.name}</div><div class="card-anime">${c.anime}</div>`;
+    front.innerHTML = `${cardImageHTML(c, icon)}<div class="card-name">${c.name}</div><div class="card-anime">${c.anime}</div>`;
 
     document.getElementById('modal-rarity-tag').innerText = `${rarityNames[c.rarity-1]} · Nível ${c.rarity}`;
     document.getElementById('modal-power').innerText = `⚡ Poder: ${c.power.toLocaleString()}`;
@@ -1049,7 +1384,7 @@ function showRevealCard(card) {
     const el = document.getElementById('reveal-card-3d');
     el.className = `reveal-card-3d r${card.rarity}`;
     const icon = summonIconFor(card.rarity);
-    el.innerHTML = `<div class="card-index">#${card.id}</div><div class="card-center">${icon}</div><div class="card-name">${card.name}</div><div class="card-anime">${card.anime}</div>`;
+    el.innerHTML = `<div class="card-index">#${card.id}</div>${cardImageHTML(card, icon)}<div class="card-name">${card.name}</div><div class="card-anime">${card.anime}</div>`;
 
     document.getElementById('reveal-rarity-label').innerText = `${rarityNames[card.rarity - 1]} · Nível ${card.rarity}`;
     document.getElementById('reveal-counter').innerText = revealQueue.length > 1 ? `1/${revealQueue.length} restantes` : '';
@@ -1140,10 +1475,24 @@ function switchScreen(id) {
     document.getElementById(id).classList.add('active');
     if(id==='collection-screen') renderCollection();
 }
-function updateHUD() {
+// Atualiza só os textos do HUD (sem salvar na nuvem) — chamada a cada
+// segundo automaticamente, pra Sorte com buff temporário aparecer certinha
+// durante todo o tempo e voltar ao normal sozinha quando expirar.
+function refreshHUDDisplay() {
     document.getElementById('gems').innerText = formatGems(game.gems);
     document.getElementById('luck-display').innerText = "x" + luckMultiplier().toFixed(2);
     document.getElementById('farm-amount-label').innerText = "+" + farmAmount();
+}
+setInterval(refreshHUDDisplay, 1000);
+
+function updateHUD() {
+    refreshHUDDisplay();
+
+    // Salva o progresso na nuvem (com um pequeno atraso pra não disparar
+    // uma escrita a cada clique — só a última leva alguns ms depois).
+    if (typeof window.queueSyncPlayerData === "function") {
+        window.queueSyncPlayerData();
+    }
 }
 function farmGems() { game.gems += farmAmount(); updateHUD(); }
 function renderCollection() {
@@ -1166,6 +1515,23 @@ setupCardTilt();
             signInAnonymously,
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            onSnapshot,
+            serverTimestamp,
+            collection,
+            addDoc,
+            query,
+            where,
+            orderBy,
+            limit,
+            getDocs,
+            deleteDoc,
+            runTransaction
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbNEz0cEMi9sfmTtTrgUi-WJJghNiy32E",
@@ -1178,7 +1544,76 @@ setupCardTilt();
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
+        const announcementRef = doc(db, "broadcast", "message");
+        const luckBuffRef = doc(db, "broadcast", "luckBuff");
+
+        // Escuta em tempo real: qualquer mensagem que o admin enviar aparece
+        // pra todo mundo que estiver com o jogo aberto, sem precisar recarregar.
+        onSnapshot(announcementRef, (snap) => {
+            const banner = document.getElementById('announcement-banner');
+            if (!banner) return;
+            const data = snap.data();
+            if (data && data.text) {
+                banner.innerText = "📢 " + data.text;
+                banner.style.display = "block";
+            } else {
+                banner.style.display = "none";
+            }
+        });
+
+        // Sorte também é global: guarda o multiplicador e o horário de expiração
+        // (timestamp em ms) num documento compartilhado, e todo cliente que
+        // estiver com o jogo aberto aplica o mesmo buff automaticamente.
+        window.globalLuckMultiplier = 1;
+        window.globalLuckExpiry = 0;
+        onSnapshot(luckBuffRef, (snap) => {
+            const data = snap.data();
+            if (data && data.multiplier && data.expiresAt) {
+                window.globalLuckMultiplier = data.multiplier;
+                window.globalLuckExpiry = data.expiresAt;
+            } else {
+                window.globalLuckMultiplier = 1;
+                window.globalLuckExpiry = 0;
+            }
+            if (typeof updateHUD === "function") updateHUD();
+        });
+
+        // Exposta globalmente pra o Admin Painel aplicar o buff de sorte pra todos.
+        window.sendLuckBuffToAll = async function (multiplier, durationMs) {
+            const expiresAt = Date.now() + durationMs;
+            try {
+                await setDoc(luckBuffRef, { multiplier: multiplier, expiresAt: expiresAt, sentAt: serverTimestamp() });
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao aplicar sorte global: " + (err.code || err.message));
+            }
+        };
+
+        // Exposta globalmente pra o botão do Admin Painel (fora do módulo) poder chamar.
+        window.sendAnnouncementToAll = async function () {
+            const input = document.getElementById('admin-message-input');
+            const status = document.getElementById('admin-message-status');
+            const text = input.value.trim();
+            if (!text) {
+                status.style.color = "#f87171";
+                status.innerText = "Escreva uma mensagem antes de enviar.";
+                return;
+            }
+            status.style.color = "#818cf8";
+            status.innerText = "Enviando...";
+            try {
+                await setDoc(announcementRef, { text: text, sentAt: serverTimestamp() });
+                status.style.color = "#4ade80";
+                status.innerText = "Mensagem enviada para todos!";
+                input.value = "";
+            } catch (err) {
+                console.error(err);
+                status.style.color = "#f87171";
+                status.innerText = "Erro ao enviar: " + (err.code || err.message);
+            }
+        };
 
         const loginScreen = document.getElementById("login-screen");
         const errorBox = document.getElementById("login-error");
@@ -1223,16 +1658,266 @@ setupCardTilt();
             }
         });
 
-        onAuthStateChanged(auth, (user) => {
+        let currentUid = null;
+        let playerDocRef = null;
+        let syncTimeout = null;
+
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                document.body.classList.remove("game-locked");
                 loginScreen.style.display = "none";
-                console.log("Logado como:", user.isAnonymous ? "Visitante" : user.displayName);
+                currentUid = user.uid;
+                playerDocRef = doc(db, "players", user.uid);
+                window.playerTag = user.uid.slice(0, 6).toUpperCase();
+
+                // Mostra "Carregando..." IMEDIATAMENTE (antes de buscar no Firestore)
+                // pra tela não ficar em branco/travada durante a busca.
+                document.body.classList.add("game-locked");
+                document.getElementById('username-screen').style.display = "flex";
+                document.getElementById('username-loading').style.display = "block";
+                document.getElementById('username-form-wrap').style.display = "none";
+                document.getElementById('username-screen-title').innerText = "✨ Anime Gacha Master";
+
+                let data = {};
+                try {
+                    const snap = await getDoc(playerDocRef);
+                    if (snap.exists()) data = snap.data();
+                } catch (err) {
+                    console.error("Erro ao carregar progresso:", err);
+                }
+
+                // Carrega o progresso salvo (se existir) e substitui o estado local
+                // que começou do zero em memória.
+                game.gems = (data.gems === "infinity") ? Infinity : (data.gems ?? game.gems);
+                game.gemUpgradeLevel = data.gemUpgradeLevel ?? game.gemUpgradeLevel;
+                game.luckLevel = data.luckLevel ?? game.luckLevel;
+                game.collection = [];
+                game.collectionMap = new Map();
+                game.ownedRarityCounts = new Array(27).fill(0);
+                const cardsMap = data.cards || {};
+                Object.keys(cardsMap).forEach(idStr => {
+                    const id = parseInt(idStr);
+                    const baseCard = game.allCards.find(c => c.id === id);
+                    if (baseCard) {
+                        const entry = { ...baseCard, count: cardsMap[idStr] };
+                        game.collection.push(entry);
+                        game.collectionMap.set(id, entry);
+                        game.ownedRarityCounts[baseCard.rarity] += cardsMap[idStr];
+                    }
+                });
+                if (data.playerTag) window.playerTag = data.playerTag;
+
+                if (data.displayName) {
+                    // Já tem nome de usuário escolhido: entra direto no jogo.
+                    window.currentPlayerName = data.displayName;
+                    document.getElementById('username-screen').style.display = "none";
+                    document.body.classList.remove("game-locked");
+                    if (typeof updateHUD === "function") updateHUD();
+                    if (typeof updateRarityFilterLabels === "function") updateRarityFilterLabels();
+                } else {
+                    // Primeira vez: precisa escolher um nome antes de liberar o jogo.
+                    document.getElementById('username-screen-title').innerText = "👤 Escolha seu nome";
+                    document.getElementById('username-loading').style.display = "none";
+                    document.getElementById('username-form-wrap').style.display = "block";
+                }
+
+                console.log("Logado, ID:", window.playerTag);
             } else {
                 document.body.classList.add("game-locked");
                 loginScreen.style.display = "flex";
+                document.getElementById('username-screen').style.display = "none";
+                document.getElementById('username-loading').style.display = "none";
+                document.getElementById('username-form-wrap').style.display = "block";
+                currentUid = null;
+                playerDocRef = null;
             }
         });
+
+        // Checa se um nome de usuário já está em uso por outro jogador.
+        async function isUsernameTaken(name) {
+            const q = query(collection(db, "players"), where("displayName", "==", name));
+            const snap = await getDocs(q);
+            return snap.docs.some(d => d.id !== currentUid);
+        }
+
+        document.getElementById('btn-confirm-username').addEventListener('click', async () => {
+            const input = document.getElementById('username-input');
+            const errBox = document.getElementById('username-error');
+            const name = input.value.trim();
+            if (name.length < 3 || name.length > 16) {
+                errBox.innerText = "O nome deve ter entre 3 e 16 caracteres.";
+                return;
+            }
+            errBox.style.color = "#818cf8";
+            errBox.innerText = "Verificando...";
+            try {
+                if (await isUsernameTaken(name)) {
+                    errBox.style.color = "#f87171";
+                    errBox.innerText = "Esse nome já está em uso, escolha outro.";
+                    return;
+                }
+                await setDoc(playerDocRef, { displayName: name, playerTag: window.playerTag }, { merge: true });
+                window.currentPlayerName = name;
+                document.getElementById('username-screen').style.display = "none";
+                document.body.classList.remove("game-locked");
+                errBox.innerText = "";
+                if (typeof updateHUD === "function") updateHUD();
+                if (typeof updateRarityFilterLabels === "function") updateRarityFilterLabels();
+            } catch (err) {
+                console.error(err);
+                errBox.style.color = "#f87171";
+                errBox.innerText = "Erro: " + (err.code || err.message);
+            }
+        });
+
+        // Exposta pra tela de Perfil poder trocar o nome depois.
+        window.changeUsername = async function (name) {
+            if (await isUsernameTaken(name)) {
+                throw new Error("Esse nome já está em uso, escolha outro.");
+            }
+            await setDoc(playerDocRef, { displayName: name }, { merge: true });
+            window.currentPlayerName = name;
+        };
+
+        // Salva o progresso atual no Firestore (com um pequeno debounce pra
+        // não escrever a cada clique — só a última chamada em ~800ms leva).
+        window.queueSyncPlayerData = function () {
+            if (!playerDocRef) return;
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(async () => {
+                const cardsMap = {};
+                let cardCount = 0;
+                game.collection.forEach(entry => {
+                    cardsMap[entry.id] = entry.count;
+                    cardCount += entry.count;
+                });
+                const gemsToStore = (game.gems === Infinity) ? "infinity" : game.gems;
+                try {
+                    await setDoc(playerDocRef, {
+                        displayName: window.currentPlayerName || "Jogador",
+                        gems: gemsToStore,
+                        gemsForRanking: (game.gems === Infinity) ? 1e15 : game.gems,
+                        cardCount: cardCount,
+                        gemUpgradeLevel: game.gemUpgradeLevel,
+                        luckLevel: game.luckLevel,
+                        cards: cardsMap,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                } catch (err) {
+                    console.error("Erro ao salvar progresso:", err);
+                }
+            }, 800);
+        };
+
+        // ===== RANKING =====
+        window.fetchRankings = async function () {
+            const playersRef = collection(db, "players");
+            const byCardsQ = query(playersRef, orderBy("cardCount", "desc"), limit(10));
+            const byGemsQ = query(playersRef, orderBy("gemsForRanking", "desc"), limit(10));
+            const [cardsSnap, gemsSnap] = await Promise.all([getDocs(byCardsQ), getDocs(byGemsQ)]);
+            const byCards = cardsSnap.docs.map(d => ({ name: d.data().displayName || "Jogador", cardCount: d.data().cardCount || 0 }));
+            const byGems = gemsSnap.docs.map(d => ({ name: d.data().displayName || "Jogador", gems: (d.data().gems === "infinity") ? Infinity : (d.data().gems || 0) }));
+            return { byCards, byGems };
+        };
+
+        // ===== TROCAS =====
+        window.postTrade = async function (offerCardId, offerCount, wantCardId, wantCount) {
+            if (!currentUid) throw new Error("Não logado.");
+            await addDoc(collection(db, "trades"), {
+                fromUid: currentUid,
+                fromName: window.currentPlayerName || "Jogador",
+                offerCardId, offerCount, wantCardId, wantCount,
+                status: "open",
+                createdAt: serverTimestamp()
+            });
+        };
+
+        window.fetchOpenTrades = async function () {
+            const tradesRef = collection(db, "trades");
+            const q = query(tradesRef, where("status", "==", "open"), orderBy("createdAt", "desc"), limit(30));
+            const snap = await getDocs(q);
+            return snap.docs.map(d => {
+                const data = d.data();
+                return { id: d.id, ...data, isOwn: data.fromUid === currentUid };
+            });
+        };
+
+        window.cancelTradeById = async function (tradeId) {
+            const tradeRef = doc(db, "trades", tradeId);
+            const snap = await getDoc(tradeRef);
+            if (!snap.exists() || snap.data().fromUid !== currentUid) throw new Error("Troca não encontrada ou não é sua.");
+            await deleteDoc(tradeRef);
+        };
+
+        // Aceita uma troca: transação atômica que move as cartas entre os
+        // dois jogadores (quem publicou e quem está aceitando).
+        window.acceptTradeById = async function (tradeId) {
+            if (!currentUid) throw new Error("Não logado.");
+            const tradeRef = doc(db, "trades", tradeId);
+            const myRef = doc(db, "players", currentUid);
+
+            await runTransaction(db, async (transaction) => {
+                const tradeSnap = await transaction.get(tradeRef);
+                if (!tradeSnap.exists() || tradeSnap.data().status !== "open") {
+                    throw new Error("Essa troca não está mais disponível.");
+                }
+                const trade = tradeSnap.data();
+                if (trade.fromUid === currentUid) throw new Error("Você não pode aceitar sua própria troca.");
+
+                const otherRef = doc(db, "players", trade.fromUid);
+                const mySnap = await transaction.get(myRef);
+                const otherSnap = await transaction.get(otherRef);
+                if (!mySnap.exists() || !otherSnap.exists()) throw new Error("Dados de jogador não encontrados.");
+
+                const myCards = mySnap.data().cards || {};
+                const otherCards = otherSnap.data().cards || {};
+
+                const myWantCount = myCards[trade.wantCardId] || 0;
+                const otherOfferCount = otherCards[trade.offerCardId] || 0;
+                if (myWantCount < trade.wantCount) throw new Error(`Você não tem ${trade.wantCount}x da carta #${trade.wantCardId}.`);
+                if (otherOfferCount < trade.offerCount) throw new Error("O outro jogador não tem mais essa carta disponível.");
+
+                // Remove o que cada um está dando
+                myCards[trade.wantCardId] = myWantCount - trade.wantCount;
+                otherCards[trade.offerCardId] = otherOfferCount - trade.offerCount;
+                // Adiciona o que cada um está recebendo
+                myCards[trade.offerCardId] = (myCards[trade.offerCardId] || 0) + trade.offerCount;
+                otherCards[trade.wantCardId] = (otherCards[trade.wantCardId] || 0) + trade.wantCount;
+
+                const myCardCount = Object.values(myCards).reduce((a, b) => a + b, 0);
+                const otherCardCount = Object.values(otherCards).reduce((a, b) => a + b, 0);
+
+                transaction.update(myRef, { cards: myCards, cardCount: myCardCount });
+                transaction.update(otherRef, { cards: otherCards, cardCount: otherCardCount });
+                transaction.update(tradeRef, { status: "completed", completedAt: serverTimestamp() });
+            });
+
+            // Atualiza o estado local do jogador que aceitou, pra refletir na hora.
+            const tradeSnap = await getDoc(tradeRef);
+            if (tradeSnap.exists()) {
+                const trade = tradeSnap.data();
+                const wantEntry = game.collectionMap.get(trade.wantCardId);
+                if (wantEntry) {
+                    wantEntry.count -= trade.wantCount;
+                    if (wantEntry.count <= 0) {
+                        game.collection = game.collection.filter(c => c.id !== trade.wantCardId);
+                        game.collectionMap.delete(trade.wantCardId);
+                    }
+                }
+                const offerCard = game.allCards.find(c => c.id === trade.offerCardId);
+                if (offerCard) {
+                    let entry = game.collectionMap.get(trade.offerCardId);
+                    if (entry) {
+                        entry.count += trade.offerCount;
+                    } else {
+                        entry = { ...offerCard, count: trade.offerCount };
+                        game.collection.push(entry);
+                        game.collectionMap.set(trade.offerCardId, entry);
+                    }
+                }
+                if (typeof updateHUD === "function") updateHUD();
+                if (typeof updateRarityFilterLabels === "function") updateRarityFilterLabels();
+            }
+        };
     </script>
 </body>
 </html>
