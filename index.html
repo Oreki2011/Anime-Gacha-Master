@@ -860,52 +860,82 @@ function openShop() { renderShop(); switchScreen('shop-screen'); }
 // ===== SISTEMA DE CÓDIGOS =====
 // Cada código é único (só pode ser usado 1 vez) e normalizado em minúsculas
 // pra não importar como o jogador digitou (maiúsculas/espaços).
-const validCodes = {
-    "bye messi": {
-        label: "Bye Messi",
-        apply: () => {
-            game.gems = Infinity;
-            document.getElementById('btn-admin-panel').style.display = "inline-block";
-        },
-        message: "Código especial ativado! Você recebeu 1 Googolquintiplex de gemas e desbloqueou o Admin Painel. 🎉"
-    }
-};
+// COLE ESTE NOVO BLOCO NO LUGAR:
+const validCodes = {}; 
 
 function formatGems(value) {
-    if (value === Infinity) return "Googolquintiplex ✨";
-    return value.toLocaleString();
+    if (value === Infinity || value === "Infinity") return "Googolquintiplex ✨";
+    return Number(value).toLocaleString();
 }
 
-function redeemCode() {
+async function redeemCode() {
     const input = document.getElementById('code-input');
     const msgBox = document.getElementById('code-message');
     const raw = input.value.trim();
-    const key = raw.toLowerCase();
+    const key = raw.toLowerCase(); 
 
     if (!raw) {
         msgBox.style.color = "#f87171";
         msgBox.innerText = "Digite um código.";
         return;
     }
+
     if (game.redeemedCodes.has(key)) {
         msgBox.style.color = "#f87171";
         msgBox.innerText = "Esse código já foi usado.";
         return;
     }
-    const code = validCodes[key];
-    if (!code) {
-        msgBox.style.color = "#f87171";
-        msgBox.innerText = "Código inválido.";
-        return;
-    }
 
-    code.apply();
-    game.redeemedCodes.add(key);
-    msgBox.style.color = "#4ade80";
-    msgBox.innerText = code.message;
-    input.value = "";
-    updateHUD();
+    msgBox.style.color = "#ffffff";
+    msgBox.innerText = "Verificando código...";
+
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            msgBox.style.color = "#f87171";
+            msgBox.innerText = "Você precisa estar logado para usar códigos.";
+            return;
+        }
+
+        // Consulta dinâmica ao Realtime Database
+        const dbRef = ref(db);
+        const snapshot = await get(child(dbRef, `codigos/${key}`));
+
+        if (!snapshot.exists()) {
+            msgBox.style.color = "#f87171";
+            msgBox.innerText = "Código inválido.";
+            return;
+        }
+
+        const codeData = snapshot.val();
+
+        if (codeData.recompensa === "admin") {
+            game.gems = Infinity;
+            document.getElementById('btn-admin-panel').style.display = "inline-block";
+            
+            const playerRef = ref(db, `players/${user.uid}/saves`);
+            await update(playerRef, {
+                gems: "Infinity",
+                role: "admin" 
+            });
+        }
+
+        game.redeemedCodes.add(key);
+        
+        msgBox.style.color = "#4ade80";
+        msgBox.innerText = codeData.mensagem;
+        input.value = "";
+        updateHUD();
+
+    } catch (error) {
+        console.error("Erro ao resgatar código:", error);
+        msgBox.style.color = "#f87171";
+        msgBox.innerText = "Erro na verificação. Tente novamente.";
+    }
 }
+
+window.redeemCode = redeemCode;
+        
 
 // ===== ADMIN PAINEL =====
 
