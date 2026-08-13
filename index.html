@@ -1505,6 +1505,7 @@ initDatabase();
 updateHUD();
 setupCardTilt();
     </script>
+  <!-- SUBSTITUA A SEÇÃO FIREBASE COMPLETA DO SEU HTML PELO CÓDIGO ABAIXO -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -1516,26 +1517,21 @@ setupCardTilt();
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import {
-            getFirestore,
-            doc,
-            getDoc,
-            setDoc,
-            onSnapshot,
-            serverTimestamp,
-            collection,
-            addDoc,
-            query,
-            where,
-            orderBy,
-            limit,
-            getDocs,
-            deleteDoc,
-            runTransaction
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+            getDatabase,
+            ref,
+            get,
+            set,
+            onValue,
+            push,
+            update,
+            remove,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbNEz0cEMi9sfmTtTrgUi-WJJghNiy32E",
             authDomain: "anime-gacha-master.firebaseapp.com",
+            databaseURL: "https://anime-gacha-master-default-rtdb.firebaseio.com",
             projectId: "anime-gacha-master",
             storageBucket: "anime-gacha-master.firebasestorage.app",
             messagingSenderId: "435922058347",
@@ -1544,54 +1540,47 @@ setupCardTilt();
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        const announcementRef = doc(db, "broadcast", "message");
-        const luckBuffRef = doc(db, "broadcast", "luckBuff");
+        const db = getDatabase(app);
 
-        // Escuta em tempo real: qualquer mensagem que o admin enviar aparece
-        // pra todo mundo que estiver com o jogo aberto, sem precisar recarregar.
-        onSnapshot(announcementRef, (snap) => {
+        // Referências do RTDB
+        const announcementRef = ref(db, "broadcast/message");
+        const luckBuffRef = ref(db, "broadcast/luckBuff");
+        const playersRef = ref(db, "players");
+        const tradesRef = ref(db, "trades");
+
+        // Escuta mensagem de anúncio (tempo real)
+        onValue(announcementRef, (snap) => {
             const banner = document.getElementById('announcement-banner');
             if (!banner) return;
-            const data = snap.data();
-            if (data && data.text) {
-                banner.innerText = "📢 " + data.text;
-                banner.style.display = "block";
+            if (snap.exists()) {
+                const data = snap.val();
+                if (data && data.text) {
+                    banner.innerText = "📢 " + data.text;
+                    banner.style.display = "block";
+                }
             } else {
                 banner.style.display = "none";
             }
-        });
+        }, (err) => console.log("Anúncio: erro ou offline", err));
 
-        // Sorte também é global: guarda o multiplicador e o horário de expiração
-        // (timestamp em ms) num documento compartilhado, e todo cliente que
-        // estiver com o jogo aberto aplica o mesmo buff automaticamente.
+        // Escuta buff de sorte (tempo real)
         window.globalLuckMultiplier = 1;
         window.globalLuckExpiry = 0;
-        onSnapshot(luckBuffRef, (snap) => {
-            const data = snap.data();
-            if (data && data.multiplier && data.expiresAt) {
-                window.globalLuckMultiplier = data.multiplier;
-                window.globalLuckExpiry = data.expiresAt;
+        onValue(luckBuffRef, (snap) => {
+            if (snap.exists()) {
+                const data = snap.val();
+                if (data && data.multiplier && data.expiresAt) {
+                    window.globalLuckMultiplier = data.multiplier;
+                    window.globalLuckExpiry = data.expiresAt;
+                }
             } else {
                 window.globalLuckMultiplier = 1;
                 window.globalLuckExpiry = 0;
             }
             if (typeof updateHUD === "function") updateHUD();
-        });
+        }, (err) => console.log("Buff de sorte: erro ou offline", err));
 
-        // Exposta globalmente pra o Admin Painel aplicar o buff de sorte pra todos.
-        window.sendLuckBuffToAll = async function (multiplier, durationMs) {
-            const expiresAt = Date.now() + durationMs;
-            try {
-                await setDoc(luckBuffRef, { multiplier: multiplier, expiresAt: expiresAt, sentAt: serverTimestamp() });
-            } catch (err) {
-                console.error(err);
-                alert("Erro ao aplicar sorte global: " + (err.code || err.message));
-            }
-        };
-
-        // Exposta globalmente pra o botão do Admin Painel (fora do módulo) poder chamar.
+        // Admin: enviar anúncio pra todos
         window.sendAnnouncementToAll = async function () {
             const input = document.getElementById('admin-message-input');
             const status = document.getElementById('admin-message-status');
@@ -1604,7 +1593,7 @@ setupCardTilt();
             status.style.color = "#818cf8";
             status.innerText = "Enviando...";
             try {
-                await setDoc(announcementRef, { text: text, sentAt: serverTimestamp() });
+                await set(announcementRef, { text: text, sentAt: Date.now() });
                 status.style.color = "#4ade80";
                 status.innerText = "Mensagem enviada para todos!";
                 input.value = "";
@@ -1612,6 +1601,17 @@ setupCardTilt();
                 console.error(err);
                 status.style.color = "#f87171";
                 status.innerText = "Erro ao enviar: " + (err.code || err.message);
+            }
+        };
+
+        // Admin: aplicar buff de sorte global
+        window.sendLuckBuffToAll = async function (multiplier, durationMs) {
+            const expiresAt = Date.now() + durationMs;
+            try {
+                await set(luckBuffRef, { multiplier: multiplier, expiresAt: expiresAt });
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao aplicar sorte global: " + (err.code || err.message));
             }
         };
 
@@ -1638,7 +1638,7 @@ setupCardTilt();
             errorBox.innerText = "";
             setLoading(true);
             try {
-                await signInWithPopup(auth, provider);
+                await signInWithPopup(auth, new GoogleAuthProvider());
             } catch (err) {
                 showError(err);
             } finally {
@@ -1659,18 +1659,16 @@ setupCardTilt();
         });
 
         let currentUid = null;
-        let playerDocRef = null;
+        let playerDataRef = null;
         let syncTimeout = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 loginScreen.style.display = "none";
                 currentUid = user.uid;
-                playerDocRef = doc(db, "players", user.uid);
+                playerDataRef = ref(db, `players/${user.uid}`);
                 window.playerTag = user.uid.slice(0, 6).toUpperCase();
 
-                // Mostra "Carregando..." IMEDIATAMENTE (antes de buscar no Firestore)
-                // pra tela não ficar em branco/travada durante a busca.
                 document.body.classList.add("game-locked");
                 document.getElementById('username-screen').style.display = "flex";
                 document.getElementById('username-loading').style.display = "block";
@@ -1679,14 +1677,13 @@ setupCardTilt();
 
                 let data = {};
                 try {
-                    const snap = await getDoc(playerDocRef);
-                    if (snap.exists()) data = snap.data();
+                    const snap = await get(playerDataRef);
+                    if (snap.exists()) data = snap.val();
                 } catch (err) {
                     console.error("Erro ao carregar progresso:", err);
                 }
 
-                // Carrega o progresso salvo (se existir) e substitui o estado local
-                // que começou do zero em memória.
+                // Carrega progresso
                 game.gems = (data.gems === "infinity") ? Infinity : (data.gems ?? game.gems);
                 game.gemUpgradeLevel = data.gemUpgradeLevel ?? game.gemUpgradeLevel;
                 game.luckLevel = data.luckLevel ?? game.luckLevel;
@@ -1707,14 +1704,12 @@ setupCardTilt();
                 if (data.playerTag) window.playerTag = data.playerTag;
 
                 if (data.displayName) {
-                    // Já tem nome de usuário escolhido: entra direto no jogo.
                     window.currentPlayerName = data.displayName;
                     document.getElementById('username-screen').style.display = "none";
                     document.body.classList.remove("game-locked");
                     if (typeof updateHUD === "function") updateHUD();
                     if (typeof updateRarityFilterLabels === "function") updateRarityFilterLabels();
                 } else {
-                    // Primeira vez: precisa escolher um nome antes de liberar o jogo.
                     document.getElementById('username-screen-title').innerText = "👤 Escolha seu nome";
                     document.getElementById('username-loading').style.display = "none";
                     document.getElementById('username-form-wrap').style.display = "block";
@@ -1725,18 +1720,22 @@ setupCardTilt();
                 document.body.classList.add("game-locked");
                 loginScreen.style.display = "flex";
                 document.getElementById('username-screen').style.display = "none";
-                document.getElementById('username-loading').style.display = "none";
-                document.getElementById('username-form-wrap').style.display = "block";
                 currentUid = null;
-                playerDocRef = null;
+                playerDataRef = null;
             }
         });
 
-        // Checa se um nome de usuário já está em uso por outro jogador.
+        // Verifica se username já existe
         async function isUsernameTaken(name) {
-            const q = query(collection(db, "players"), where("displayName", "==", name));
-            const snap = await getDocs(q);
-            return snap.docs.some(d => d.id !== currentUid);
+            try {
+                const snap = await get(playersRef);
+                if (!snap.exists()) return false;
+                const players = snap.val();
+                return Object.values(players).some(p => p.displayName === name && p.uid !== currentUid);
+            } catch (err) {
+                console.error(err);
+                return false;
+            }
         }
 
         document.getElementById('btn-confirm-username').addEventListener('click', async () => {
@@ -1755,7 +1754,7 @@ setupCardTilt();
                     errBox.innerText = "Esse nome já está em uso, escolha outro.";
                     return;
                 }
-                await setDoc(playerDocRef, { displayName: name, playerTag: window.playerTag }, { merge: true });
+                await set(playerDataRef, { displayName: name, playerTag: window.playerTag, uid: currentUid }, { merge: true });
                 window.currentPlayerName = name;
                 document.getElementById('username-screen').style.display = "none";
                 document.body.classList.remove("game-locked");
@@ -1769,19 +1768,17 @@ setupCardTilt();
             }
         });
 
-        // Exposta pra tela de Perfil poder trocar o nome depois.
         window.changeUsername = async function (name) {
             if (await isUsernameTaken(name)) {
                 throw new Error("Esse nome já está em uso, escolha outro.");
             }
-            await setDoc(playerDocRef, { displayName: name }, { merge: true });
+            await update(playerDataRef, { displayName: name });
             window.currentPlayerName = name;
         };
 
-        // Salva o progresso atual no Firestore (com um pequeno debounce pra
-        // não escrever a cada clique — só a última chamada em ~800ms leva).
+        // Salva progresso no RTDB
         window.queueSyncPlayerData = function () {
-            if (!playerDocRef) return;
+            if (!playerDataRef) return;
             clearTimeout(syncTimeout);
             syncTimeout = setTimeout(async () => {
                 const cardsMap = {};
@@ -1792,7 +1789,7 @@ setupCardTilt();
                 });
                 const gemsToStore = (game.gems === Infinity) ? "infinity" : game.gems;
                 try {
-                    await setDoc(playerDocRef, {
+                    await update(playerDataRef, {
                         displayName: window.currentPlayerName || "Jogador",
                         gems: gemsToStore,
                         gemsForRanking: (game.gems === Infinity) ? 1e15 : game.gems,
@@ -1800,124 +1797,151 @@ setupCardTilt();
                         gemUpgradeLevel: game.gemUpgradeLevel,
                         luckLevel: game.luckLevel,
                         cards: cardsMap,
-                        updatedAt: serverTimestamp()
-                    }, { merge: true });
+                        updatedAt: Date.now()
+                    });
                 } catch (err) {
                     console.error("Erro ao salvar progresso:", err);
                 }
             }, 800);
         };
 
-        // ===== RANKING =====
+        // RANKING: busca do RTDB
         window.fetchRankings = async function () {
-            const playersRef = collection(db, "players");
-            const byCardsQ = query(playersRef, orderBy("cardCount", "desc"), limit(10));
-            const byGemsQ = query(playersRef, orderBy("gemsForRanking", "desc"), limit(10));
-            const [cardsSnap, gemsSnap] = await Promise.all([getDocs(byCardsQ), getDocs(byGemsQ)]);
-            const byCards = cardsSnap.docs.map(d => ({ name: d.data().displayName || "Jogador", cardCount: d.data().cardCount || 0 }));
-            const byGems = gemsSnap.docs.map(d => ({ name: d.data().displayName || "Jogador", gems: (d.data().gems === "infinity") ? Infinity : (d.data().gems || 0) }));
-            return { byCards, byGems };
+            try {
+                const snap = await get(playersRef);
+                if (!snap.exists()) return { byCards: [], byGems: [] };
+                
+                const players = snap.val();
+                const playerArray = Object.values(players || {})
+                    .filter(p => p.displayName)
+                    .sort((a, b) => (b.cardCount || 0) - (a.cardCount || 0));
+
+                const byCards = playerArray.slice(0, 10).map(p => ({
+                    name: p.displayName || "Jogador",
+                    cardCount: p.cardCount || 0
+                }));
+
+                const byGems = playerArray
+                    .sort((a, b) => ((b.gems === "infinity" ? 1e15 : b.gems || 0) - (a.gems === "infinity" ? 1e15 : a.gems || 0)))
+                    .slice(0, 10)
+                    .map(p => ({
+                        name: p.displayName || "Jogador",
+                        gems: p.gems === "infinity" ? Infinity : (p.gems || 0)
+                    }));
+
+                return { byCards, byGems };
+            } catch (err) {
+                console.error(err);
+                return { byCards: [], byGems: [] };
+            }
         };
 
-        // ===== TROCAS =====
+        // TROCAS: postar nova troca
         window.postTrade = async function (offerCardId, offerCount, wantCardId, wantCount) {
             if (!currentUid) throw new Error("Não logado.");
-            await addDoc(collection(db, "trades"), {
+            const newTradeRef = push(tradesRef);
+            await set(newTradeRef, {
                 fromUid: currentUid,
                 fromName: window.currentPlayerName || "Jogador",
                 offerCardId, offerCount, wantCardId, wantCount,
                 status: "open",
-                createdAt: serverTimestamp()
+                createdAt: Date.now()
             });
         };
 
+        // TROCAS: carregar lista
         window.fetchOpenTrades = async function () {
-            const tradesRef = collection(db, "trades");
-            const q = query(tradesRef, where("status", "==", "open"), orderBy("createdAt", "desc"), limit(30));
-            const snap = await getDocs(q);
-            return snap.docs.map(d => {
-                const data = d.data();
-                return { id: d.id, ...data, isOwn: data.fromUid === currentUid };
-            });
-        };
-
-        window.cancelTradeById = async function (tradeId) {
-            const tradeRef = doc(db, "trades", tradeId);
-            const snap = await getDoc(tradeRef);
-            if (!snap.exists() || snap.data().fromUid !== currentUid) throw new Error("Troca não encontrada ou não é sua.");
-            await deleteDoc(tradeRef);
-        };
-
-        // Aceita uma troca: transação atômica que move as cartas entre os
-        // dois jogadores (quem publicou e quem está aceitando).
-        window.acceptTradeById = async function (tradeId) {
-            if (!currentUid) throw new Error("Não logado.");
-            const tradeRef = doc(db, "trades", tradeId);
-            const myRef = doc(db, "players", currentUid);
-
-            await runTransaction(db, async (transaction) => {
-                const tradeSnap = await transaction.get(tradeRef);
-                if (!tradeSnap.exists() || tradeSnap.data().status !== "open") {
-                    throw new Error("Essa troca não está mais disponível.");
-                }
-                const trade = tradeSnap.data();
-                if (trade.fromUid === currentUid) throw new Error("Você não pode aceitar sua própria troca.");
-
-                const otherRef = doc(db, "players", trade.fromUid);
-                const mySnap = await transaction.get(myRef);
-                const otherSnap = await transaction.get(otherRef);
-                if (!mySnap.exists() || !otherSnap.exists()) throw new Error("Dados de jogador não encontrados.");
-
-                const myCards = mySnap.data().cards || {};
-                const otherCards = otherSnap.data().cards || {};
-
-                const myWantCount = myCards[trade.wantCardId] || 0;
-                const otherOfferCount = otherCards[trade.offerCardId] || 0;
-                if (myWantCount < trade.wantCount) throw new Error(`Você não tem ${trade.wantCount}x da carta #${trade.wantCardId}.`);
-                if (otherOfferCount < trade.offerCount) throw new Error("O outro jogador não tem mais essa carta disponível.");
-
-                // Remove o que cada um está dando
-                myCards[trade.wantCardId] = myWantCount - trade.wantCount;
-                otherCards[trade.offerCardId] = otherOfferCount - trade.offerCount;
-                // Adiciona o que cada um está recebendo
-                myCards[trade.offerCardId] = (myCards[trade.offerCardId] || 0) + trade.offerCount;
-                otherCards[trade.wantCardId] = (otherCards[trade.wantCardId] || 0) + trade.wantCount;
-
-                const myCardCount = Object.values(myCards).reduce((a, b) => a + b, 0);
-                const otherCardCount = Object.values(otherCards).reduce((a, b) => a + b, 0);
-
-                transaction.update(myRef, { cards: myCards, cardCount: myCardCount });
-                transaction.update(otherRef, { cards: otherCards, cardCount: otherCardCount });
-                transaction.update(tradeRef, { status: "completed", completedAt: serverTimestamp() });
-            });
-
-            // Atualiza o estado local do jogador que aceitou, pra refletir na hora.
-            const tradeSnap = await getDoc(tradeRef);
-            if (tradeSnap.exists()) {
-                const trade = tradeSnap.data();
-                const wantEntry = game.collectionMap.get(trade.wantCardId);
-                if (wantEntry) {
-                    wantEntry.count -= trade.wantCount;
-                    if (wantEntry.count <= 0) {
-                        game.collection = game.collection.filter(c => c.id !== trade.wantCardId);
-                        game.collectionMap.delete(trade.wantCardId);
+            try {
+                const snap = await get(tradesRef);
+                if (!snap.exists()) return [];
+                const trades = [];
+                snap.forEach(childSnap => {
+                    const data = childSnap.val();
+                    if (data.status === "open") {
+                        trades.push({ id: childSnap.key, ...data, isOwn: data.fromUid === currentUid });
                     }
-                }
-                const offerCard = game.allCards.find(c => c.id === trade.offerCardId);
-                if (offerCard) {
-                    let entry = game.collectionMap.get(trade.offerCardId);
-                    if (entry) {
-                        entry.count += trade.offerCount;
-                    } else {
-                        entry = { ...offerCard, count: trade.offerCount };
-                        game.collection.push(entry);
-                        game.collectionMap.set(trade.offerCardId, entry);
-                    }
-                }
-                if (typeof updateHUD === "function") updateHUD();
-                if (typeof updateRarityFilterLabels === "function") updateRarityFilterLabels();
+                });
+                return trades.sort((a, b) => b.createdAt - a.createdAt).slice(0, 30);
+            } catch (err) {
+                console.error(err);
+                return [];
             }
         };
+
+        // TROCAS: cancelar
+        window.cancelTradeById = async function (tradeId) {
+            const tradeRef = ref(db, `trades/${tradeId}`);
+            const snap = await get(tradeRef);
+            if (!snap.exists() || snap.val().fromUid !== currentUid) {
+                throw new Error("Troca não encontrada ou não é sua.");
+            }
+            await remove(tradeRef);
+        };
+
+        // TROCAS: aceitar (transfere cartas entre jogadores)
+        window.acceptTradeById = async function (tradeId) {
+            if (!currentUid) throw new Error("Não logado.");
+            const tradeRef = ref(db, `trades/${tradeId}`);
+            const tradeSnap = await get(tradeRef);
+            if (!tradeSnap.exists()) throw new Error("Troca não encontrada.");
+            
+            const trade = tradeSnap.val();
+            if (trade.status !== "open") throw new Error("Essa troca não está mais disponível.");
+            if (trade.fromUid === currentUid) throw new Error("Você não pode aceitar sua própria troca.");
+
+            const myRef = ref(db, `players/${currentUid}`);
+            const otherRef = ref(db, `players/${trade.fromUid}`);
+
+            const mySnap = await get(myRef);
+            const otherSnap = await get(otherRef);
+            if (!mySnap.exists() || !otherSnap.exists()) throw new Error("Dados de jogador não encontrados.");
+
+            const myCards = mySnap.val().cards || {};
+            const otherCards = otherSnap.val().cards || {};
+
+            const myWantCount = myCards[trade.wantCardId] || 0;
+            const otherOfferCount = otherCards[trade.offerCardId] || 0;
+            if (myWantCount < trade.wantCount) throw new Error(`Você não tem ${trade.wantCount}x da carta #${trade.wantCardId}.`);
+            if (otherOfferCount < trade.offerCount) throw new Error("O outro jogador não tem mais essa carta.");
+
+            // Efetua a troca
+            myCards[trade.wantCardId] = myWantCount - trade.wantCount;
+            otherCards[trade.offerCardId] = otherOfferCount - trade.offerCount;
+            myCards[trade.offerCardId] = (myCards[trade.offerCardId] || 0) + trade.offerCount;
+            otherCards[trade.wantCardId] = (otherCards[trade.wantCardId] || 0) + trade.wantCount;
+
+            const myCardCount = Object.values(myCards).reduce((a, b) => a + b, 0);
+            const otherCardCount = Object.values(otherCards).reduce((a, b) => a + b, 0);
+
+            await update(myRef, { cards: myCards, cardCount: myCardCount });
+            await update(otherRef, { cards: otherCards, cardCount: otherCardCount });
+            await update(tradeRef, { status: "completed", completedAt: Date.now() });
+
+            // Atualiza estado local
+            const wantEntry = game.collectionMap.get(trade.wantCardId);
+            if (wantEntry) {
+                wantEntry.count -= trade.wantCount;
+                if (wantEntry.count <= 0) {
+                    game.collection = game.collection.filter(c => c.id !== trade.wantCardId);
+                    game.collectionMap.delete(trade.wantCardId);
+                }
+            }
+            const offerCard = game.allCards.find(c => c.id === trade.offerCardId);
+            if (offerCard) {
+                let entry = game.collectionMap.get(trade.offerCardId);
+                if (entry) {
+                    entry.count += trade.offerCount;
+                } else {
+                    entry = { ...offerCard, count: trade.offerCount };
+                    game.collection.push(entry);
+                    game.collectionMap.set(trade.offerCardId, entry);
+                }
+            }
+            if (typeof updateHUD === "function") updateHUD();
+            if (typeof updateRarityFilterLabels === "function") updateRarityFilterLabels();
+        };
     </script>
+
+  
 </body>
 </html>
